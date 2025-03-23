@@ -117,7 +117,7 @@ func (v *Offsets) Validate() error {
 	previousOffset := 0
 	previousDomain := ""
 	previousFile := ""
-	previousID := ""
+	previousID := -1
 	for _, offset := range v.offsets {
 		// offset
 		if offset.offset < 0 {
@@ -144,10 +144,14 @@ func (v *Offsets) Validate() error {
 		if offset.id == "" {
 			return fmt.Errorf("Empty id")
 		}
-		if offset.id <= previousID {
-			return fmt.Errorf("ID goes down: %s, previous %s", offset.id, previousID)
+		id, err := strconv.Atoi(offset.id)
+		if err != nil {
+			return fmt.Errorf("Error converting id to integer: %v", err)
 		}
-		previousID = offset.id
+		if id <= previousID {
+			return fmt.Errorf("ID goes down: %d, previous %d", id, previousID)
+		}
+		previousID = id
 
 		// file
 		if offset.file == "" {

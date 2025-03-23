@@ -133,6 +133,13 @@ func TestOffsets_Validate(t *testing.T) {
 			expected: "Empty id",
 		},
 		{
+			name: "ID not number",
+			offsets: []vertices.Offset{
+				vertices.NewOffset(123, "org.example", "aaa", "vertices.txt"),
+			},
+			expected: "Error converting id to integer: strconv.Atoi: parsing \"aaa\": invalid syntax",
+		},
+		{
 			name: "ID goes down",
 			offsets: []vertices.Offset{
 				vertices.NewOffset(123, "com.example", "84", "vertices.txt"),
