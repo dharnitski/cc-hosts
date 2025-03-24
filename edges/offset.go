@@ -127,9 +127,13 @@ func (v *Offsets) Validate() error {
 		if err != nil {
 			return fmt.Errorf("Error converting id to integer: %v", err)
 		}
-		// ids are not unique in edges file, we can have multiple offsets pointing to same ID
-		if id < previousID {
-			return fmt.Errorf("ID goes down: %d, previous %d", id, previousID)
+		// each file has sorted IDs but files are not sorted itself
+		// each file can store IDs from 0 to max ID
+		if previousFile == offset.file {
+			// ids are not unique in edges file, we can have multiple offsets pointing to same ID
+			if id < previousID {
+				return fmt.Errorf("ID goes down: %d, previous %d", id, previousID)
+			}
 		}
 		previousID = id
 
