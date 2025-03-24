@@ -1,8 +1,10 @@
 package vertices_test
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/vertices"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -10,7 +12,7 @@ import (
 
 func getVertices(t *testing.T) vertices.Vertices {
 	offsets := vertices.Offsets{}
-	err := offsets.Load("../data/vertices.offsets.txt")
+	err := offsets.Load(fmt.Sprintf("../data/%s", access.VerticesOffsetsFile))
 	require.NoError(t, err)
 	return vertices.NewVertices("../data/vertices", offsets)
 }

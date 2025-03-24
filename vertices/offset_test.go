@@ -1,9 +1,11 @@
 package vertices_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
+	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/vertices"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -175,7 +177,7 @@ func TestOffsetsFindForDomain(t *testing.T) {
 	t.Parallel()
 
 	offsets := vertices.Offsets{}
-	err := offsets.Load("../data/vertices.offsets.txt")
+	err := offsets.Load(fmt.Sprintf("../data/%s", access.VerticesOffsetsFile))
 	require.NoError(t, err)
 
 	tests := []string{
