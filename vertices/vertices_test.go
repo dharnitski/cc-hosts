@@ -86,3 +86,20 @@ func TestVerticesGetByID(t *testing.T) {
 		})
 	}
 }
+
+func TestVerticesGetByIDs(t *testing.T) {
+	t.Parallel()
+
+	v := getVertices(t)
+
+	ids := []string{
+		"0",
+		"119",
+		"283704017",
+		"283704060",
+	}
+	vertices, err := v.GetByIDs(ids)
+	require.NoError(t, err)
+	require.NotNil(t, vertices)
+	assert.Len(t, vertices, 4)
+}

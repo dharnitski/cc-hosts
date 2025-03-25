@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/access/file"
@@ -64,6 +65,60 @@ func (v *Vertices) GetByDomain(domain string) (*Vertice, error) {
 
 func (v *Vertices) GetByID(id string) (*Vertice, error) {
 	return v.get(id, searchKeyID)
+}
+
+func (v *Vertices) GetByIDs(ids []string) ([]Vertice, error) {
+	type result struct {
+		vertice *Vertice
+		err     error
+		index   int
+	}
+
+	resultChan := make(chan result, len(ids))
+	var wg sync.WaitGroup
+
+	// Set a fixed concurrency limit (e.g., 10 workers)
+	concurrency := 10
+	semaphore := make(chan struct{}, concurrency)
+
+	for i, id := range ids {
+		wg.Add(1)
+		semaphore <- struct{}{} // Acquire semaphore
+
+		go func(idx int, id string) {
+			defer wg.Done()
+			defer func() { <-semaphore }() // Release semaphore
+
+			vertice, err := v.GetByID(id)
+			resultChan <- result{
+				vertice: vertice,
+				err:     err,
+				index:   idx,
+			}
+		}(i, id)
+	}
+
+	// Close the channel when all goroutines are done
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	// Prepare results in order
+	results := []Vertice{}
+	errs := []error{}
+	for res := range resultChan {
+		if res.err != nil {
+			errs = append(errs, res.err)
+		}
+		if res.vertice != nil {
+			results = append(results, *res.vertice)
+		}
+	}
+	if len(errs) > 0 {
+		return results, fmt.Errorf("Errors: %v", errs)
+	}
+	return results, nil
 }
 
 func (v *Vertices) get(key string, searchSwitch searchKey) (*Vertice, error) {
