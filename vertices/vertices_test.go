@@ -64,23 +64,25 @@ func TestVerticesGetNil(t *testing.T) {
 	}
 }
 
-// func TestVerticesGetByID(t *testing.T) {
-// 	t.Parallel()
+func TestVerticesGetByID(t *testing.T) {
+	t.Parallel()
 
-// 	v := getVertices(t)
+	v := getVertices(t)
 
-// 	tests := []string{
-// 		// "0",
-// 		"119",
-// 	}
+	tests := []string{
+		"0",
+		"119",
+		"283704017",
+		"283704060",
+	}
 
-// 	for _, id := range tests {
-// 		t.Run(id, func(t *testing.T) {
-// 			t.Parallel()
-// 			vertice, err := v.GetByID(id)
-// 			require.NoError(t, err)
-// 			require.NotNil(t, vertice, id)
-// 			assert.Equal(t, id, vertice.ID())
-// 		})
-// 	}
-// }
+	for _, id := range tests {
+		t.Run(id, func(t *testing.T) {
+			t.Parallel()
+			vertice, err := v.GetByID(id)
+			require.NoError(t, err)
+			require.NotNil(t, vertice, id)
+			assert.Equal(t, id, vertice.ID())
+		})
+	}
+}

@@ -51,26 +51,33 @@ func NewVertices(folder string, offsets Offsets) *Vertices {
 	}
 }
 
-type verticeMatch func(Vertice, string) bool
+type searchKey string
 
-func matchByDomain(v Vertice, domain string) bool {
-	return v.domain == domain
-}
-
-func matchByID(v Vertice, id string) bool {
-	return v.id == id
-}
+const (
+	searchKeyDomain searchKey = "domain"
+	searchKeyID     searchKey = "id"
+)
 
 func (v *Vertices) GetByDomain(domain string) (*Vertice, error) {
-	return v.get(domain, matchByDomain)
+	return v.get(domain, searchKeyDomain)
 }
 
 func (v *Vertices) GetByID(id string) (*Vertice, error) {
-	return v.get(id, matchByID)
+	return v.get(id, searchKeyID)
 }
 
-func (v *Vertices) get(key string, matchFn verticeMatch) (*Vertice, error) {
-	from, to := v.offsets.FindForDomain(key)
+func (v *Vertices) get(key string, searchSwitch searchKey) (*Vertice, error) {
+	var from, to Offset
+	switch searchSwitch {
+	case searchKeyDomain:
+		from, to = v.offsets.FindForDomain(key)
+	case searchKeyID:
+		id, err := strconv.Atoi(key)
+		if err != nil {
+			return nil, fmt.Errorf("Invalid ID: %s", key)
+		}
+		from, to = v.offsets.FindForID(id)
+	}
 	// if we lucky and Vertice is in offset
 	if from.domain == to.domain &&
 		from.id == to.id && from.offset == to.offset {
@@ -81,10 +88,10 @@ func (v *Vertices) get(key string, matchFn verticeMatch) (*Vertice, error) {
 		return nil, err
 	}
 
-	return findVertice(buffer, key, matchFn)
+	return findVertice(buffer, key, searchSwitch)
 }
 
-func findVertice(buffer []byte, key string, matchFn verticeMatch) (*Vertice, error) {
+func findVertice(buffer []byte, key string, searchSwitch searchKey) (*Vertice, error) {
 	reader := bytes.NewReader(buffer)
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
@@ -93,10 +100,15 @@ func findVertice(buffer []byte, key string, matchFn verticeMatch) (*Vertice, err
 		if err != nil {
 			return nil, err
 		}
-
-		match := matchFn(*vertice, key)
-		if match {
-			return vertice, nil
+		switch searchSwitch {
+		case searchKeyDomain:
+			if vertice.domain == key {
+				return vertice, nil
+			}
+		case searchKeyID:
+			if vertice.id == key {
+				return vertice, nil
+			}
 		}
 	}
 	if err := scanner.Err(); err != nil {
