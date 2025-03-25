@@ -13,7 +13,7 @@ import (
 
 func TestVerticesOffset_String(t *testing.T) {
 	t.Parallel()
-	vo := vertices.NewOffset(123, "com.example", "42", "vertices.txt")
+	vo := vertices.NewOffset(123, "com.example", 42, "vertices.txt")
 	expected := "com.example\t123\t42\tvertices.txt"
 	assert.Equal(t, expected, vo.String())
 }
@@ -21,8 +21,8 @@ func TestVerticesOffset_String(t *testing.T) {
 func TestOffsets_SaveLoad(t *testing.T) {
 	t.Parallel()
 	items := []vertices.Offset{
-		vertices.NewOffset(123, "com.example", "42", "vertices.txt"),
-		vertices.NewOffset(456, "org.example", "84", "vertices.txt"),
+		vertices.NewOffset(123, "com.example", 42, "vertices.txt"),
+		vertices.NewOffset(456, "org.example", 84, "vertices.txt"),
 	}
 	offsets := vertices.Offsets{}
 	offsets.Append(items)
@@ -87,8 +87,8 @@ func TestOffsets_Validate(t *testing.T) {
 		{
 			name: "Valid offsets",
 			offsets: []vertices.Offset{
-				vertices.NewOffset(123, "com.example", "42", "vertices.txt"),
-				vertices.NewOffset(456, "org.example", "84", "vertices.txt"),
+				vertices.NewOffset(123, "com.example", 42, "vertices.txt"),
+				vertices.NewOffset(456, "org.example", 84, "vertices.txt"),
 			},
 			expected: "",
 		},
@@ -100,59 +100,45 @@ func TestOffsets_Validate(t *testing.T) {
 		{
 			name: "Invalid offset",
 			offsets: []vertices.Offset{
-				vertices.NewOffset(-123, "com.example", "42", "vertices.txt"),
+				vertices.NewOffset(-123, "com.example", 42, "vertices.txt"),
 			},
 			expected: "Invalid offset: -123",
 		},
 		{
 			name: "Offset goes down",
 			offsets: []vertices.Offset{
-				vertices.NewOffset(456, "com.example", "42", "vertices.txt"),
-				vertices.NewOffset(123, "org.example", "84", "vertices.txt"),
+				vertices.NewOffset(456, "com.example", 42, "vertices.txt"),
+				vertices.NewOffset(123, "org.example", 84, "vertices.txt"),
 			},
 			expected: "Offset goes down: 123, previous 456",
 		},
 		{
 			name: "Empty domain",
 			offsets: []vertices.Offset{
-				vertices.NewOffset(123, "", "42", "vertices.txt"),
+				vertices.NewOffset(123, "", 42, "vertices.txt"),
 			},
 			expected: "Empty domain",
 		},
 		{
 			name: "Domain goes down",
 			offsets: []vertices.Offset{
-				vertices.NewOffset(123, "org.example", "42", "vertices.txt"),
-				vertices.NewOffset(456, "com.example", "84", "vertices.txt"),
+				vertices.NewOffset(123, "org.example", 42, "vertices.txt"),
+				vertices.NewOffset(456, "com.example", 84, "vertices.txt"),
 			},
 			expected: "Domain goes down: com.example, previous org.example",
 		},
 		{
-			name: "Empty ID",
-			offsets: []vertices.Offset{
-				vertices.NewOffset(123, "org.example", "", "vertices.txt"),
-			},
-			expected: "Empty id",
-		},
-		{
-			name: "ID not number",
-			offsets: []vertices.Offset{
-				vertices.NewOffset(123, "org.example", "aaa", "vertices.txt"),
-			},
-			expected: "Error converting id to integer: strconv.Atoi: parsing \"aaa\": invalid syntax",
-		},
-		{
 			name: "ID goes down",
 			offsets: []vertices.Offset{
-				vertices.NewOffset(123, "com.example", "84", "vertices.txt"),
-				vertices.NewOffset(456, "org.example", "42", "vertices.txt"),
+				vertices.NewOffset(123, "com.example", 84, "vertices.txt"),
+				vertices.NewOffset(456, "org.example", 42, "vertices.txt"),
 			},
 			expected: "ID goes down: 42, previous 84",
 		},
 		{
 			name: "Empty file",
 			offsets: []vertices.Offset{
-				vertices.NewOffset(123, "org.example", "42", ""),
+				vertices.NewOffset(123, "org.example", 42, ""),
 			},
 			expected: "Empty file",
 		},
@@ -186,6 +172,7 @@ func TestOffsetsFindForDomain(t *testing.T) {
 		"com.example",
 		"org.example",
 		"zw.zzs.th.ac.lpru.arounduniversity.ixiz.qoo",
+		"asia.fjs.xr",
 	}
 
 	for _, domain := range tests {

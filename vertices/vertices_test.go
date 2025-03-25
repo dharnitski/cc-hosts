@@ -10,14 +10,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func getVertices(t *testing.T) vertices.Vertices {
+func getVertices(t *testing.T) *vertices.Vertices {
 	offsets := vertices.Offsets{}
 	err := offsets.Load(fmt.Sprintf("../data/%s", access.VerticesOffsetsFile))
 	require.NoError(t, err)
 	return vertices.NewVertices("../data/vertices", offsets)
 }
 
-func TestVerticesGet(t *testing.T) {
+func TestVerticesGetByDomain(t *testing.T) {
 	t.Parallel()
 
 	v := getVertices(t)
@@ -35,7 +35,7 @@ func TestVerticesGet(t *testing.T) {
 	for _, domain := range tests {
 		t.Run(domain, func(t *testing.T) {
 			t.Parallel()
-			vertice, err := v.Get(domain)
+			vertice, err := v.GetByDomain(domain)
 			require.NoError(t, err)
 			require.NotNil(t, vertice, domain)
 			assert.Equal(t, domain, vertice.Domain())
@@ -57,9 +57,30 @@ func TestVerticesGetNil(t *testing.T) {
 	for _, domain := range tests {
 		t.Run(domain, func(t *testing.T) {
 			t.Parallel()
-			vertice, err := v.Get(domain)
+			vertice, err := v.GetByDomain(domain)
 			require.NoError(t, err)
 			assert.Nil(t, vertice, domain)
 		})
 	}
 }
+
+// func TestVerticesGetByID(t *testing.T) {
+// 	t.Parallel()
+
+// 	v := getVertices(t)
+
+// 	tests := []string{
+// 		// "0",
+// 		"119",
+// 	}
+
+// 	for _, id := range tests {
+// 		t.Run(id, func(t *testing.T) {
+// 			t.Parallel()
+// 			vertice, err := v.GetByID(id)
+// 			require.NoError(t, err)
+// 			require.NotNil(t, vertice, id)
+// 			assert.Equal(t, id, vertice.ID())
+// 		})
+// 	}
+// }

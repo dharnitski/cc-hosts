@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/edges"
@@ -79,7 +80,7 @@ func processOneVerticesFile(scanner *bufio.Scanner, fileName string) ([]vertices
 	firstLine := true
 	lastSavedOffset := 0
 	domain := ""
-	id := ""
+	id := -1
 	for scanner.Scan() {
 		// read bytes to properly calculate offset
 		bytes := scanner.Bytes()
@@ -92,7 +93,11 @@ func processOneVerticesFile(scanner *bufio.Scanner, fileName string) ([]vertices
 			return nil, fmt.Errorf("Invalid line: %s\n", line)
 		}
 		domain = vertice.Domain()
-		id = vertice.ID()
+		sid := vertice.ID()
+		id, err = strconv.Atoi(sid)
+		if err != nil {
+			return nil, fmt.Errorf("Invalid ID: %s\n", sid)
+		}
 		if firstLine {
 			firstLine = false
 			result = append(result, vertices.NewOffset(offset, domain, id, fileName))

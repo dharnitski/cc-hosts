@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/dharnitski/cc-hosts/access"
@@ -42,33 +43,48 @@ type Vertices struct {
 	getter access.Getter
 }
 
-func NewVertices(folder string, offsets Offsets) Vertices {
-	return Vertices{
+func NewVertices(folder string, offsets Offsets) *Vertices {
+	return &Vertices{
 		folder:  folder,
 		offsets: offsets,
 		getter:  file.NewGetter(folder),
 	}
 }
 
-func (v *Vertices) Get(domain string) (*Vertice, error) {
-	from, to := v.offsets.FindForDomain(domain)
+type verticeMatch func(Vertice, string) bool
 
+func matchByDomain(v Vertice, domain string) bool {
+	return v.domain == domain
+}
+
+func matchByID(v Vertice, id string) bool {
+	return v.id == id
+}
+
+func (v *Vertices) GetByDomain(domain string) (*Vertice, error) {
+	return v.get(domain, matchByDomain)
+}
+
+func (v *Vertices) GetByID(id string) (*Vertice, error) {
+	return v.get(id, matchByID)
+}
+
+func (v *Vertices) get(key string, matchFn verticeMatch) (*Vertice, error) {
+	from, to := v.offsets.FindForDomain(key)
 	// if we lucky and Vertice is in offset
-	if from.domain == domain {
-		return &Vertice{id: from.id, domain: from.domain}, nil
-	}
-	if to.domain == domain {
-		return &Vertice{id: to.id, domain: to.domain}, nil
+	if from.domain == to.domain &&
+		from.id == to.id && from.offset == to.offset {
+		return &Vertice{id: strconv.Itoa(from.id), domain: from.domain}, nil
 	}
 	buffer, err := v.getter.Get(from.file, from.offset, to.offset-from.offset)
 	if err != nil {
 		return nil, err
 	}
 
-	return findVertice(buffer, domain)
+	return findVertice(buffer, key, matchFn)
 }
 
-func findVertice(buffer []byte, domain string) (*Vertice, error) {
+func findVertice(buffer []byte, key string, matchFn verticeMatch) (*Vertice, error) {
 	reader := bytes.NewReader(buffer)
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
@@ -77,7 +93,9 @@ func findVertice(buffer []byte, domain string) (*Vertice, error) {
 		if err != nil {
 			return nil, err
 		}
-		if vertice.domain == domain {
+
+		match := matchFn(*vertice, key)
+		if match {
 			return vertice, nil
 		}
 	}

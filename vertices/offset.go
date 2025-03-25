@@ -21,18 +21,18 @@ type Offset struct {
 	domain string
 	// vertice id
 	// in file ot 0 based line number
-	id string
+	id int
 	// vertices file name without path
 	file string
 }
 
-func NewOffset(offset int, domain, id, file string) Offset {
+func NewOffset(offset int, domain string, id int, file string) Offset {
 	return Offset{offset: offset, domain: domain, id: id, file: file}
 }
 
 // save in format "domain \t offset \t file"
 func (v Offset) String() string {
-	return fmt.Sprintf("%s\t%d\t%s\t%s", v.domain, v.offset, v.id, v.file)
+	return fmt.Sprintf("%s\t%d\t%d\t%s", v.domain, v.offset, v.id, v.file)
 }
 
 func (v Offset) Offset() int {
@@ -52,7 +52,11 @@ func loadOffset(line string) (Offset, error) {
 	if err != nil {
 		return Offset{}, fmt.Errorf("Invalid offset: %s", parts[1])
 	}
-	return Offset{offset: offset, domain: parts[0], id: parts[2], file: parts[3]}, nil
+	id, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return Offset{}, fmt.Errorf("Invalid id: %s", parts[2])
+	}
+	return Offset{offset: offset, domain: parts[0], id: id, file: parts[3]}, nil
 }
 
 type Offsets struct {
@@ -141,13 +145,7 @@ func (v *Offsets) Validate() error {
 		previousDomain = offset.domain
 
 		// id
-		if offset.id == "" {
-			return fmt.Errorf("Empty id")
-		}
-		id, err := strconv.Atoi(offset.id)
-		if err != nil {
-			return fmt.Errorf("Error converting id to integer: %v", err)
-		}
+		id := offset.id
 		if id <= previousID {
 			return fmt.Errorf("ID goes down: %d, previous %d", id, previousID)
 		}
@@ -200,5 +198,45 @@ func (v *Offsets) FindForDomain(domain string) (Offset, Offset) {
 	// At this point, left > right, and the domain was not found
 	// right is the greatest index with domain < target
 	// left is the smallest index with domain > target
+	return items[right], items[left]
+}
+
+func (v *Offsets) FindForID(id int) (Offset, Offset) {
+	items := v.offsets
+	if len(items) == 0 {
+		return Offset{}, Offset{}
+	}
+
+	// Binary search implementation
+	left := 0
+	right := len(items) - 1
+
+	// If id is outside our range, return appropriate bounds
+	if id < items[left].id {
+		return Offset{}, items[left]
+	}
+	if id > items[right].id {
+		return items[right], Offset{}
+	}
+
+	// Binary search
+	for left <= right {
+		mid := left + (right-left)/2
+
+		if items[mid].id == id {
+			// Exact match found
+			return items[mid], items[mid]
+		}
+
+		if items[mid].id < id {
+			left = mid + 1
+		} else {
+			right = mid - 1
+		}
+	}
+
+	// At this point, left > right, and the id was not found
+	// right is the greatest index with id < target
+	// left is the smallest index with id > target
 	return items[right], items[left]
 }

@@ -1,9 +1,11 @@
 package edges_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
+	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -156,27 +158,39 @@ func TestOffsets_Validate(t *testing.T) {
 	}
 }
 
-// func TestOffsetsFindForDomain(t *testing.T) {
-// 	t.Parallel()
+func TestOffsetsFindForFromID(t *testing.T) {
+	t.Parallel()
 
-// 	offsets := edges.Offsets{}
-// 	err := offsets.Load(fmt.Sprintf("../data/%s", access.VerticesOffsetsFile))
-// 	require.NoError(t, err)
+	offsets := edges.Offsets{}
+	err := offsets.Load(fmt.Sprintf("../data/%s", access.EdgesOffsetsFile))
+	require.NoError(t, err)
 
-// 	tests := []string{
-// 		"aaa.11111",
-// 		"ae.regards",
-// 		"com.example",
-// 		"org.example",
-// 		"zw.zzs.th.ac.lpru.arounduniversity.ixiz.qoo",
-// 	}
-
-// 	for _, domain := range tests {
-// 		t.Run(domain, func(t *testing.T) {
-// 			t.Parallel()
-// 			start, finish := offsets.FindForDomain(domain)
-// 			assert.LessOrEqual(t, start.Domain(), domain)
-// 			assert.GreaterOrEqual(t, finish.Domain(), domain)
-// 		})
-// 	}
-// }
+	tests := []struct {
+		id   string
+		from int
+		to   int
+	}{
+		// 0 is not on file
+		{id: "0", from: 0, to: 0},
+		// 74 is not of file
+		{id: "74", from: 0, to: 0},
+		// first line
+		{id: "75", from: 0, to: 1048590},
+		{id: "96032", from: 0, to: 1048590},
+		// second line
+		{id: "96033", from: 0, to: 2097167},
+		{id: "96034", from: 1048590, to: 2097167},
+		// last line
+		{id: "283704001", from: 3688922830, to: 3689816010},
+	}
+	for _, tt := range tests {
+		t.Run(tt.id, func(t *testing.T) {
+			t.Parallel()
+			allOffsets := offsets.FindForFromID(tt.id)
+			offset, ok := allOffsets["part-00000-02106921-c60f-49b6-912c-b03ea5690455-c000.txt"]
+			assert.True(t, ok)
+			assert.Equal(t, tt.from, offset.From.Offset())
+			assert.Equal(t, tt.to, offset.To.Offset())
+		})
+	}
+}

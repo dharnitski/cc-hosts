@@ -1,8 +1,14 @@
 package edges
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"sort"
 	"strings"
+
+	"github.com/dharnitski/cc-hosts/access"
+	"github.com/dharnitski/cc-hosts/access/file"
 )
 
 type Edge struct {
@@ -26,4 +32,66 @@ func LoadEdge(line string) (*Edge, error) {
 		return nil, fmt.Errorf("Invalid line: %s, %d parts", line, len(parts))
 	}
 	return &Edge{fromID: parts[0], toID: parts[1]}, nil
+}
+
+type Edges struct {
+	// offsets to find edges in edges files
+	offsets Offsets
+	// folder with edges files
+	folder string
+	getter access.Getter
+}
+
+func NewEdges(folder string, offsets Offsets) *Edges {
+	return &Edges{
+		folder:  folder,
+		offsets: offsets,
+		getter:  file.NewGetter(folder),
+	}
+}
+
+// for source vertice id return list of target vertice ids
+func (v *Edges) Get(fromID string) ([]string, error) {
+	offsets := v.offsets.FindForFromID(fromID)
+
+	results := make([]string, 0)
+	for file, offset := range offsets {
+		buffer, err := v.getter.Get(file, offset.From.offset, offset.To.offset-offset.From.offset)
+		if err != nil {
+			return nil, err
+		}
+		edges, err := findEdges(buffer, fromID)
+		if err != nil {
+			return results, err
+		}
+		results = append(results, edges...)
+	}
+	sort.Strings(results)
+	return results, nil
+}
+
+func findEdges(buffer []byte, fromID string) ([]string, error) {
+	reader := bytes.NewReader(buffer)
+	scanner := bufio.NewScanner(reader)
+	results := make([]string, 0)
+	for scanner.Scan() {
+		line := scanner.Text()
+		vertice, err := LoadEdge(line)
+		if err != nil {
+			return nil, err
+		}
+		if vertice.fromID == fromID {
+			results = append(results, vertice.toID)
+		} else {
+			// items sorted and we can break after we reach items with different fromID
+			if len(results) > 0 {
+				break
+			}
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("Error reading file: %v\n", err)
+	}
+
+	return results, nil
 }

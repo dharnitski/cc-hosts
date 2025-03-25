@@ -15,7 +15,7 @@ func TestLoadVerticesOffset(t *testing.T) {
 
 	assert.Equal(t, 123, vo.offset)
 	assert.Equal(t, "example.com", vo.domain)
-	assert.Equal(t, "42", vo.id)
+	assert.Equal(t, 42, vo.id)
 	assert.Equal(t, "vertices.txt", vo.file)
 }
 

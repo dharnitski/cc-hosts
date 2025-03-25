@@ -32,6 +32,10 @@ func (v Offset) String() string {
 	return fmt.Sprintf("%s\t%d\t%s", v.id, v.offset, v.file)
 }
 
+func (v Offset) Offset() int {
+	return v.offset
+}
+
 func loadOffset(line string) (Offset, error) {
 	parts := strings.Split(line, "\t")
 	if len(parts) != 3 {
@@ -144,4 +148,69 @@ func (v *Offsets) Validate() error {
 		previousFile = offset.file
 	}
 	return nil
+}
+
+type TwoOffsets struct {
+	From Offset
+	To   Offset
+}
+
+// map of offsets with key as file name
+func (v *Offsets) offsetsMap() map[string][]Offset {
+	result := make(map[string][]Offset)
+	for _, offset := range v.offsets {
+		result[offset.file] = append(result[offset.file], offset)
+	}
+	return result
+}
+
+// return from and to offsets for domain to fetch data from file
+func (v *Offsets) FindForFromID(fromID string) map[string]TwoOffsets {
+	items := v.offsets
+	if len(items) == 0 {
+		return map[string]TwoOffsets{}
+	}
+
+	offsetsMap := v.offsetsMap()
+	grouppedOffsets := make(map[string]TwoOffsets)
+	for file, offsets := range offsetsMap {
+		from, to := findFromFomIDInFile(fromID, offsets)
+		grouppedOffsets[file] = TwoOffsets{from, to}
+	}
+
+	return grouppedOffsets
+}
+
+func findFromFomIDInFile(fromID string, offsets []Offset) (Offset, Offset) {
+	items := offsets
+	if len(items) == 0 {
+		return Offset{}, Offset{}
+	}
+
+	inID, err := strconv.Atoi(fromID)
+	if err != nil {
+		return Offset{}, Offset{}
+	}
+
+	left := items[0]
+	right := items[len(items)-1]
+	for _, offset := range items {
+		id, err := strconv.Atoi(offset.id)
+		if err != nil {
+			return Offset{}, Offset{}
+		}
+		if id < inID {
+			left = offset
+			continue
+		}
+		if id > inID {
+			right = offset
+			break
+		}
+	}
+
+	// At this point, left > right, and the domain was not found
+	// right is the greatest index with domain < target
+	// left is the smallest index with domain > target
+	return left, right
 }
