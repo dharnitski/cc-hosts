@@ -1,8 +1,9 @@
 package access
 
 const (
-	VerticesOffsetsFile = "vertices.offsets.txt"
-	EdgesOffsetsFile    = "edges.offsets.txt"
+	VerticesOffsetsFile     = "vertices.offsets.txt"
+	EdgesOffsetsFile        = "edges.offsets.txt"
+	EdgesReversedOffsetFile = "edges-reversed.offsets.txt"
 )
 
 type Getter interface {

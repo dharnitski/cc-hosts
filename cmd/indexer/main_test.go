@@ -49,3 +49,43 @@ func TestProcessOneVerticesFile_ScannerError(t *testing.T) {
 	_, err := processOneVerticesFile(scanner, "vertices.txt")
 	require.Error(t, err)
 }
+
+func TestProcessOneEdgesFile(t *testing.T) {
+	t.Parallel()
+	buffer := strings.Builder{}
+	for i := 0; i < 100000; i++ {
+		buffer.WriteString(fmt.Sprintf("%d\t%d\n", i, i))
+	}
+	scanner := bufio.NewScanner(strings.NewReader(buffer.String()))
+	result, err := processOneEdgesFile(scanner, "edges.txt")
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, 3, len(result))
+
+	assert.Equal(t, "0\t0\tedges.txt", result[0].String())
+	assert.Equal(t, "89233\t1048576\tedges.txt", result[1].String())
+	assert.Equal(t, "99999\t1177780\tedges.txt", result[2].String())
+}
+
+func TestProcessOneEdgesFile_InvalidLine(t *testing.T) {
+	t.Parallel()
+	data := "bad_data\n"
+	scanner := bufio.NewScanner(strings.NewReader(data))
+
+	_, err := processOneEdgesFile(scanner, "edges.txt")
+	require.Error(t, err)
+}
+
+func TestProcessOneEdgesFile_ScannerError(t *testing.T) {
+	t.Parallel()
+	data := "domain1\n"
+	scanner := bufio.NewScanner(strings.NewReader(data))
+
+	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		return 0, nil, fmt.Errorf("scanner error")
+	})
+
+	_, err := processOneEdgesFile(scanner, "vertices.txt")
+	require.Error(t, err)
+}

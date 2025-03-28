@@ -14,9 +14,10 @@ import (
 )
 
 const (
-	dataFolder     = "data"
-	verticesFolder = dataFolder + "/vertices"
-	edgesFolder    = dataFolder + "/edges"
+	dataFolder          = "data"
+	verticesFolder      = dataFolder + "/vertices"
+	edgesFolder         = dataFolder + "/edges"
+	edgesReversedFolder = dataFolder + "/edges_reversed"
 )
 
 func main() {
