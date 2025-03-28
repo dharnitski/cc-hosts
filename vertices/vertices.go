@@ -24,8 +24,24 @@ func (v *Vertice) ID() string {
 	return v.id
 }
 
+// internal reversed domain format
+// sample: com.example
 func (v *Vertice) Domain() string {
 	return v.domain
+}
+
+func ReverseDomain(domain string) string {
+	parts := strings.Split(domain, ".")
+	for i, j := 0, len(parts)-1; i < j; i, j = i+1, j-1 {
+		parts[i], parts[j] = parts[j], parts[i]
+	}
+	return strings.Join(parts, ".")
+}
+
+// ReversedDomain returns the domain as we use it in browser
+// sample: example.com
+func (v *Vertice) ReversedDomain() string {
+	return ReverseDomain(v.domain)
 }
 
 func LoadVertice(line string) (*Vertice, error) {
