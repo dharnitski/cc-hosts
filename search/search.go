@@ -9,28 +9,49 @@ import (
 )
 
 type Searcher struct {
-	e *edges.Edges
-	v *vertices.Vertices
+	// from target to other sites
+	out *edges.Edges
+	// from external sites to target
+	in *edges.Edges
+	v  *vertices.Vertices
 }
 
-func NewSearcher(v *vertices.Vertices, e *edges.Edges) *Searcher {
-	return &Searcher{v: v, e: e}
+func NewSearcher(v *vertices.Vertices, out *edges.Edges, in *edges.Edges) *Searcher {
+	return &Searcher{v: v, out: out, in: in}
 }
 
-func (s *Searcher) GetTargets(ctx context.Context, domain string) ([]string, error) {
-	domain = vertices.ReverseDomain(domain)
-	vertice, err := s.v.GetByDomain(domain)
+type SearcherResult struct {
+	Target string
+	Out    []string
+	In     []string
+}
+
+func (s *Searcher) GetTargets(ctx context.Context, domain string) (*SearcherResult, error) {
+	reversed := vertices.ReverseDomain(domain)
+	vertice, err := s.v.GetByDomain(reversed)
 	if err != nil {
 		return nil, err
 	}
 	if vertice == nil {
 		return nil, nil
 	}
-	eIDs, err := s.e.Get(vertice.ID())
+	outs, err := s.getDomains(ctx, vertice.ID(), s.out)
 	if err != nil {
 		return nil, err
 	}
-	domains, err := s.v.GetByIDs(eIDs)
+	ins, err := s.getDomains(ctx, vertice.ID(), s.in)
+	if err != nil {
+		return nil, err
+	}
+	return &SearcherResult{Target: domain, Out: outs, In: ins}, nil
+}
+
+func (s *Searcher) getDomains(ctx context.Context, verticeID string, edges *edges.Edges) ([]string, error) {
+	outIDs, err := edges.Get(verticeID)
+	if err != nil {
+		return nil, err
+	}
+	domains, err := s.v.GetByIDs(outIDs)
 	if err != nil {
 		return nil, err
 	}
