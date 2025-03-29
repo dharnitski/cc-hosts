@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 
@@ -14,10 +15,13 @@ import (
 )
 
 const (
-	dataFolder          = "data"
-	verticesFolder      = dataFolder + "/vertices"
-	edgesForwardFolder  = dataFolder + "/edges"
-	edgesReversedFolder = dataFolder + "/edges_reversed"
+	dataFolder     = "data"
+	verticesFolder = dataFolder + "/vertices"
+)
+
+var (
+	edgesForwardFolder  = path.Join(dataFolder, edges.EdgesFolder)
+	edgesReversedFolder = path.Join(dataFolder, edges.EdgesReversedFolder)
 )
 
 func main() {

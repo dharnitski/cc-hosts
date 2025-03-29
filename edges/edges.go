@@ -11,6 +11,11 @@ import (
 	"github.com/dharnitski/cc-hosts/access/file"
 )
 
+const (
+	EdgesFolder         = "edges"
+	EdgesReversedFolder = "edges_reversed"
+)
+
 type Edge struct {
 	// source vertice id
 	fromID string

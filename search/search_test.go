@@ -1,12 +1,17 @@
 package search_test
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"path"
+	"strings"
 	"testing"
 
 	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/dharnitski/cc-hosts/search"
+	"github.com/dharnitski/cc-hosts/testdata"
 	"github.com/dharnitski/cc-hosts/vertices"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,18 +20,19 @@ import (
 func TestSearcher_GetTargets(t *testing.T) {
 	t.Parallel()
 
+	rootFolder := "../data"
 	eOffsets := edges.Offsets{}
-	err := eOffsets.Load(fmt.Sprintf("../data/%s", access.EdgesOffsetsFile))
+	err := eOffsets.Load(path.Join(rootFolder, access.EdgesOffsetsFile))
 	require.NoError(t, err)
 	out := edges.NewEdges("../data/edges", eOffsets)
 
 	eOffsets = edges.Offsets{}
-	err = eOffsets.Load(fmt.Sprintf("../data/%s", access.EdgesReversedOffsetFile))
+	err = eOffsets.Load(path.Join(rootFolder, access.EdgesReversedOffsetFile))
 	require.NoError(t, err)
 	in := edges.NewEdges("../data/edges_reversed", eOffsets)
 
 	vOffsets := vertices.Offsets{}
-	err = vOffsets.Load(fmt.Sprintf("../data/%s", access.VerticesOffsetsFile))
+	err = vOffsets.Load(path.Join(rootFolder, access.VerticesOffsetsFile))
 	require.NoError(t, err)
 	v := vertices.NewVertices("../data/vertices", vOffsets)
 
@@ -166,4 +172,77 @@ var socialNetworkKeywords = []string{
 	"youtube.com",
 	"ytimg.com",
 	"zendesk.com",
+}
+
+func TestSearcher_Missed(t *testing.T) {
+	t.Skip()
+	t.Parallel()
+
+	inputs := testdata.GetInputs()
+	inputs = append(inputs, testdata.GetExpected()...)
+
+	eOffsets := edges.Offsets{}
+	err := eOffsets.Load(fmt.Sprintf("../data/%s", access.EdgesOffsetsFile))
+	require.NoError(t, err)
+	e := edges.NewEdges("../data/edges", eOffsets)
+
+	vOffsets := vertices.Offsets{}
+	err = vOffsets.Load(fmt.Sprintf("../data/%s", access.VerticesOffsetsFile))
+	require.NoError(t, err)
+	v := vertices.NewVertices("../data/vertices", vOffsets)
+
+	// TODO: Use in and out edges
+	searcher := search.NewSearcher(v, e, e)
+
+	out := map[string]map[string]bool{}
+
+	for _, input := range inputs {
+		fmt.Printf("input: %s\n", input)
+		results, err := searcher.GetTargets(t.Context(), input)
+		assert.NoError(t, err)
+
+		if results == nil {
+			fmt.Printf("no results for %s\n", input)
+			continue
+		}
+
+		toPrint := []string{}
+		for _, result := range results.Out {
+			isSocial := false
+			for _, social := range socialNetworkKeywords {
+				if social == result || strings.HasSuffix(result, "."+social) {
+					isSocial = true
+					break
+				}
+			}
+			if isSocial {
+				continue
+			}
+			if len(toPrint) < 10 {
+				toPrint = append(toPrint, result)
+			}
+
+			for _, expected := range inputs {
+				// do not save self reference, it is data issue because input and expected is same slice
+				if expected == input {
+					continue
+				}
+				if expected == result || strings.HasSuffix(result, "."+expected) {
+					if _, ok := out[input]; !ok {
+						out[input] = map[string]bool{}
+					}
+					out[input][expected] = true
+					fmt.Printf("found expected match: %q -> %q (%q)\n", input, result, expected)
+				}
+			}
+		}
+		fmt.Printf("results for %s: %d %v \n", input, len(results.Out), toPrint)
+	}
+	// save out to JSON file
+	jsonData, err := json.MarshalIndent(out, "", "    ")
+	require.NoError(t, err)
+
+	// Write to file
+	err = os.WriteFile("output.json", jsonData, 0o644)
+	require.NoError(t, err)
 }
