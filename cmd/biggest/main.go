@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/dharnitski/cc-hosts/access"
+	"github.com/dharnitski/cc-hosts/access/file"
 	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/dharnitski/cc-hosts/vertices"
 )
@@ -25,8 +26,8 @@ func main() {
 		return
 	}
 
-	err = convertAndSave(biggestIDs, "biggest.json")	
-	if err != nil {	
+	err = convertAndSave(biggestIDs, "biggest.json")
+	if err != nil {
 		fmt.Printf("Error converting and saving: %v\n", err)
 		return
 	}
@@ -39,8 +40,8 @@ func main() {
 		return
 	}
 
-	err = convertAndSave(biggestIDs, "biggest.reversed.json")	
-	if err != nil {	
+	err = convertAndSave(biggestIDs, "biggest.reversed.json")
+	if err != nil {
 		fmt.Printf("Error converting and saving: %v\n", err)
 		return
 	}
@@ -48,14 +49,14 @@ func main() {
 
 func convertAndSave(biggestIDs map[string]int, outFile string) error {
 	fmt.Printf("Getting Domains for IDs\n")
-	
+
 	offsets := vertices.Offsets{}
 	err := offsets.Load(fmt.Sprintf("data/%s", access.VerticesOffsetsFile))
 	if err != nil {
 		return fmt.Errorf("Error loading offsets: %v", err)
 	}
-	vertices := vertices.NewVertices("data/vertices", offsets)
-	
+	vertices := vertices.NewVertices(file.NewGetter("data/vertices"), offsets)
+
 	biggest := make(map[string]int)
 	for id, counter := range biggestIDs {
 		vertice, err := vertices.GetByID(id)
@@ -63,7 +64,7 @@ func convertAndSave(biggestIDs map[string]int, outFile string) error {
 			fmt.Printf("Error getting vertice by ID %s: %v\n", id, err)
 			continue
 		}
-		if vertice == nil {	
+		if vertice == nil {
 			fmt.Printf("Vertice %s not found\n", id)
 			continue
 		}

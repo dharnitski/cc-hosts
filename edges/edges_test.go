@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/dharnitski/cc-hosts/access"
+	"github.com/dharnitski/cc-hosts/access/file"
 	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -14,7 +15,7 @@ func getEdges(t *testing.T) *edges.Edges {
 	offsets := edges.Offsets{}
 	err := offsets.Load(fmt.Sprintf("../data/%s", access.EdgesOffsetsFile))
 	require.NoError(t, err)
-	return edges.NewEdges("../data/edges", offsets)
+	return edges.NewEdges(file.NewGetter("../data/edges"), offsets)
 }
 
 func TestVerticesGet(t *testing.T) {

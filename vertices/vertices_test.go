@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/dharnitski/cc-hosts/access"
+	"github.com/dharnitski/cc-hosts/access/file"
 	"github.com/dharnitski/cc-hosts/vertices"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -14,7 +15,7 @@ func getVertices(t *testing.T) *vertices.Vertices {
 	offsets := vertices.Offsets{}
 	err := offsets.Load(fmt.Sprintf("../data/%s", access.VerticesOffsetsFile))
 	require.NoError(t, err)
-	return vertices.NewVertices("../data/vertices", offsets)
+	return vertices.NewVertices(file.NewGetter("../data/vertices"), offsets)
 }
 
 func TestVerticesGetByDomain(t *testing.T) {

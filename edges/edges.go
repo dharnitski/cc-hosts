@@ -8,13 +8,12 @@ import (
 	"strings"
 
 	"github.com/dharnitski/cc-hosts/access"
-	"github.com/dharnitski/cc-hosts/access/file"
 )
 
 const (
 	EdgesFolder         = "edges"
 	EdgesReversedFolder = "edges_reversed"
-	DefaultMaxSize   = 10_000
+	DefaultMaxSize      = 10_000
 )
 
 type Edge struct {
@@ -43,16 +42,13 @@ func LoadEdge(line string) (*Edge, error) {
 type Edges struct {
 	// offsets to find edges in edges files
 	offsets Offsets
-	// folder with edges files
-	folder string
-	getter access.Getter
+	getter  access.Getter
 }
 
-func NewEdges(folder string, offsets Offsets) *Edges {
+func NewEdges(getter access.Getter, offsets Offsets) *Edges {
 	return &Edges{
-		folder:  folder,
 		offsets: offsets,
-		getter:  file.NewGetter(folder),
+		getter:  getter,
 	}
 }
 

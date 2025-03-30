@@ -9,11 +9,11 @@ import (
 	"sync"
 
 	"github.com/dharnitski/cc-hosts/access"
-	"github.com/dharnitski/cc-hosts/access/file"
 )
 
 const (
-	Concurrency = 10
+	Concurrency    = 10
+	Folder = "vertices"
 )
 
 type Vertice struct {
@@ -59,16 +59,13 @@ func LoadVertice(line string) (*Vertice, error) {
 type Vertices struct {
 	// offsets to find vertices in vertices files
 	offsets Offsets
-	// folder with vertices files
-	folder string
-	getter access.Getter
+	getter  access.Getter
 }
 
-func NewVertices(folder string, offsets Offsets) *Vertices {
+func NewVertices(getter access.Getter, offsets Offsets) *Vertices {
 	return &Vertices{
-		folder:  folder,
 		offsets: offsets,
-		getter:  file.NewGetter(folder),
+		getter:  getter,
 	}
 }
 

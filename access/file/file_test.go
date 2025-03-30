@@ -3,10 +3,13 @@ package file_test
 import (
 	"testing"
 
+	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/access/file"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+var _ access.Getter = (*file.Getter)(nil)
 
 func TestOffsetsFile(t *testing.T) {
 	t.Parallel()

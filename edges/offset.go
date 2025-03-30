@@ -3,6 +3,7 @@ package edges
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -88,7 +89,11 @@ func (v *Offsets) Load(fileName string) error {
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
+	return v.loadFromReader(file)
+}
+
+func (v *Offsets) loadFromReader(reader io.Reader) error {
+	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		offset, err := loadOffset(scanner.Text())
 		if err != nil {

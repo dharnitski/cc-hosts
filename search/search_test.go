@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/dharnitski/cc-hosts/access"
+	"github.com/dharnitski/cc-hosts/access/file"
 	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/dharnitski/cc-hosts/search"
 	"github.com/dharnitski/cc-hosts/testdata"
@@ -24,20 +25,23 @@ func TestSearcher_GetTargets(t *testing.T) {
 	eOffsets := edges.Offsets{}
 	err := eOffsets.Load(path.Join(rootFolder, access.EdgesOffsetsFile))
 	require.NoError(t, err)
-	out := edges.NewEdges("../data/edges", eOffsets)
+	edgesGetter := file.NewGetter(path.Join(rootFolder, edges.EdgesFolder))
+	out := edges.NewEdges(edgesGetter, eOffsets)
 
 	eOffsets = edges.Offsets{}
 	err = eOffsets.Load(path.Join(rootFolder, access.EdgesReversedOffsetFile))
 	require.NoError(t, err)
-	in := edges.NewEdges("../data/edges_reversed", eOffsets)
+	RevEdgesGetter := file.NewGetter(path.Join(rootFolder, edges.EdgesReversedFolder))
+	in := edges.NewEdges(RevEdgesGetter, eOffsets)
 
 	vOffsets := vertices.Offsets{}
 	err = vOffsets.Load(path.Join(rootFolder, access.VerticesOffsetsFile))
 	require.NoError(t, err)
-	v := vertices.NewVertices("../data/vertices", vOffsets)
+	verticesGetter := file.NewGetter(path.Join(rootFolder, vertices.Folder))
+	v := vertices.NewVertices(verticesGetter, vOffsets)
 
 	searcher := search.NewSearcher(v, out, in)
-	results, err := searcher.GetTargets(t.Context(), "github.com")
+	results, err := searcher.GetTargets(t.Context(), "binaryedge.io")
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"40fy.io", "app.binaryedge.io", "blog.binaryedge.io", "cloudflare.com", "coalitioninc.com", "cyberfables.io", "d1ehrggk1349y0.cloudfront.net", "facebook.com", "fonts.googleapis.com", "github.com", "linkedin.com", "maps.googleapis.com", "slack.binaryedge.io", "support.cloudflare.com", "twitter.com"}, results.Out)
 	assert.Equal(t, []string{}, results.In)
@@ -184,12 +188,12 @@ func TestSearcher_Missed(t *testing.T) {
 	eOffsets := edges.Offsets{}
 	err := eOffsets.Load(fmt.Sprintf("../data/%s", access.EdgesOffsetsFile))
 	require.NoError(t, err)
-	e := edges.NewEdges("../data/edges", eOffsets)
+	e := edges.NewEdges(file.NewGetter("../data/edges"), eOffsets)
 
 	vOffsets := vertices.Offsets{}
 	err = vOffsets.Load(fmt.Sprintf("../data/%s", access.VerticesOffsetsFile))
 	require.NoError(t, err)
-	v := vertices.NewVertices("../data/vertices", vOffsets)
+	v := vertices.NewVertices(file.NewGetter("../data/vertices"), vOffsets)
 
 	// TODO: Use in and out edges
 	searcher := search.NewSearcher(v, e, e)
