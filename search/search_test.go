@@ -8,7 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/dharnitski/cc-hosts/access"
+	"github.com/dharnitski/cc-hosts/access/aws"
 	"github.com/dharnitski/cc-hosts/access/file"
 	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/dharnitski/cc-hosts/search"
@@ -23,7 +25,9 @@ func TestSearcher_GetTargets(t *testing.T) {
 
 	rootFolder := "../data"
 	eOffsets := edges.Offsets{}
-	err := eOffsets.Load(path.Join(rootFolder, access.EdgesOffsetsFile))
+	cfg, err := config.LoadDefaultConfig(t.Context())
+	require.NoError(t, err)
+	err = eOffsets.Load(path.Join(rootFolder, access.EdgesOffsetsFile))
 	require.NoError(t, err)
 	edgesGetter := file.NewGetter(path.Join(rootFolder, edges.EdgesFolder))
 	out := edges.NewEdges(edgesGetter, eOffsets)
@@ -37,12 +41,13 @@ func TestSearcher_GetTargets(t *testing.T) {
 	vOffsets := vertices.Offsets{}
 	err = vOffsets.Load(path.Join(rootFolder, access.VerticesOffsetsFile))
 	require.NoError(t, err)
-	verticesGetter := file.NewGetter(path.Join(rootFolder, vertices.Folder))
+	// verticesGetter := file.NewGetter(path.Join(rootFolder, vertices.Folder))
+	verticesGetter := aws.New(cfg, aws.Bucket, vertices.Folder)
 	v := vertices.NewVertices(verticesGetter, vOffsets)
 
 	searcher := search.NewSearcher(v, out, in)
 	results, err := searcher.GetTargets(t.Context(), "binaryedge.io")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []string{"40fy.io", "app.binaryedge.io", "blog.binaryedge.io", "cloudflare.com", "coalitioninc.com", "cyberfables.io", "d1ehrggk1349y0.cloudfront.net", "facebook.com", "fonts.googleapis.com", "github.com", "linkedin.com", "maps.googleapis.com", "slack.binaryedge.io", "support.cloudflare.com", "twitter.com"}, results.Out)
 	assert.Equal(t, []string{}, results.In)
 	assert.Equal(t, "binaryedge.io", results.Target)

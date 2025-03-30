@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	Concurrency    = 10
-	Folder = "vertices"
+	Concurrency = 10
+	Folder      = "vertices"
 )
 
 type Vertice struct {
@@ -181,7 +181,7 @@ func findVertice(buffer []byte, key string, searchSwitch searchKey) (*Vertice, e
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("Error reading file: %v\n", err)
+		return nil, fmt.Errorf("Error reading file for key %s: %v\n", key, err)
 	}
 
 	return nil, nil
