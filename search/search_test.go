@@ -37,7 +37,7 @@ func TestSearcher_GetTargets(t *testing.T) {
 	v := vertices.NewVertices("../data/vertices", vOffsets)
 
 	searcher := search.NewSearcher(v, out, in)
-	results, err := searcher.GetTargets(t.Context(), "binaryedge.io")
+	results, err := searcher.GetTargets(t.Context(), "github.com")
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"40fy.io", "app.binaryedge.io", "blog.binaryedge.io", "cloudflare.com", "coalitioninc.com", "cyberfables.io", "d1ehrggk1349y0.cloudfront.net", "facebook.com", "fonts.googleapis.com", "github.com", "linkedin.com", "maps.googleapis.com", "slack.binaryedge.io", "support.cloudflare.com", "twitter.com"}, results.Out)
 	assert.Equal(t, []string{}, results.In)

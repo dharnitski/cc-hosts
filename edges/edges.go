@@ -14,6 +14,7 @@ import (
 const (
 	EdgesFolder         = "edges"
 	EdgesReversedFolder = "edges_reversed"
+	DefaultMaxSize   = 10_000
 )
 
 type Edge struct {
@@ -87,6 +88,9 @@ func findEdges(buffer []byte, fromID string) ([]string, error) {
 		}
 		if vertice.fromID == fromID {
 			results = append(results, vertice.toID)
+			if len(results) >= DefaultMaxSize {
+				break
+			}
 		} else {
 			// items sorted and we can break after we reach items with different fromID
 			if len(results) > 0 {

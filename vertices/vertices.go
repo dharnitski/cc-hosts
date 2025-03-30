@@ -12,6 +12,10 @@ import (
 	"github.com/dharnitski/cc-hosts/access/file"
 )
 
+const (
+	Concurrency = 10
+)
+
 type Vertice struct {
 	// vertice id
 	id string
@@ -93,17 +97,14 @@ func (v *Vertices) GetByIDs(ids []string) ([]Vertice, error) {
 	resultChan := make(chan result, len(ids))
 	var wg sync.WaitGroup
 
-	// Set a fixed concurrency limit (e.g., 10 workers)
-	concurrency := 10
-	semaphore := make(chan struct{}, concurrency)
-
+	semaphore := make(chan struct{}, Concurrency)
 	for i, id := range ids {
 		wg.Add(1)
-		semaphore <- struct{}{} // Acquire semaphore
+		semaphore <- struct{}{}
 
 		go func(idx int, id string) {
 			defer wg.Done()
-			defer func() { <-semaphore }() // Release semaphore
+			defer func() { <-semaphore }()
 
 			vertice, err := v.GetByID(id)
 			resultChan <- result{
