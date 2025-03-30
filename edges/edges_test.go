@@ -55,7 +55,7 @@ func TestVerticesGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.id, func(t *testing.T) {
 			t.Parallel()
-			ids, err := v.Get(tt.id)
+			ids, err := v.Get(t.Context(), tt.id)
 			require.NoError(t, err)
 			require.NotEmpty(t, ids)
 			assert.Equal(t, tt.expected, ids)

@@ -35,8 +35,9 @@ func TestSearcher_GetTargets(t *testing.T) {
 	eOffsets = edges.Offsets{}
 	err = eOffsets.Load(path.Join(rootFolder, access.EdgesReversedOffsetFile))
 	require.NoError(t, err)
-	RevEdgesGetter := file.NewGetter(path.Join(rootFolder, edges.EdgesReversedFolder))
-	in := edges.NewEdges(RevEdgesGetter, eOffsets)
+	// revEdgesGetter := file.NewGetter(path.Join(rootFolder, edges.EdgesReversedFolder))
+	revEdgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesReversedFolder)
+	in := edges.NewEdges(revEdgesGetter, eOffsets)
 
 	vOffsets := vertices.Offsets{}
 	err = vOffsets.Load(path.Join(rootFolder, access.VerticesOffsetsFile))

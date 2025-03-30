@@ -28,7 +28,7 @@ type SearcherResult struct {
 
 func (s *Searcher) GetTargets(ctx context.Context, domain string) (*SearcherResult, error) {
 	reversed := vertices.ReverseDomain(domain)
-	vertice, err := s.v.GetByDomain(reversed)
+	vertice, err := s.v.GetByDomain(ctx, reversed)
 	if err != nil {
 		return nil, err
 	}
@@ -47,11 +47,11 @@ func (s *Searcher) GetTargets(ctx context.Context, domain string) (*SearcherResu
 }
 
 func (s *Searcher) getDomains(ctx context.Context, verticeID string, edges *edges.Edges) ([]string, error) {
-	outIDs, err := edges.Get(verticeID)
+	outIDs, err := edges.Get(ctx, verticeID)
 	if err != nil {
 		return nil, err
 	}
-	domains, err := s.v.GetByIDs(outIDs)
+	domains, err := s.v.GetByIDs(ctx, outIDs)
 	if err != nil {
 		return nil, err
 	}

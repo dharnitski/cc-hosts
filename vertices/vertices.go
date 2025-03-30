@@ -3,6 +3,7 @@ package vertices
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -76,15 +77,15 @@ const (
 	searchKeyID     searchKey = "id"
 )
 
-func (v *Vertices) GetByDomain(domain string) (*Vertice, error) {
-	return v.get(domain, searchKeyDomain)
+func (v *Vertices) GetByDomain(ctx context.Context, domain string) (*Vertice, error) {
+	return v.get(ctx, domain, searchKeyDomain)
 }
 
-func (v *Vertices) GetByID(id string) (*Vertice, error) {
-	return v.get(id, searchKeyID)
+func (v *Vertices) GetByID(ctx context.Context, id string) (*Vertice, error) {
+	return v.get(ctx, id, searchKeyID)
 }
 
-func (v *Vertices) GetByIDs(ids []string) ([]Vertice, error) {
+func (v *Vertices) GetByIDs(ctx context.Context, ids []string) ([]Vertice, error) {
 	type result struct {
 		vertice *Vertice
 		err     error
@@ -103,7 +104,7 @@ func (v *Vertices) GetByIDs(ids []string) ([]Vertice, error) {
 			defer wg.Done()
 			defer func() { <-semaphore }()
 
-			vertice, err := v.GetByID(id)
+			vertice, err := v.GetByID(ctx, id)
 			resultChan <- result{
 				vertice: vertice,
 				err:     err,
@@ -135,7 +136,7 @@ func (v *Vertices) GetByIDs(ids []string) ([]Vertice, error) {
 	return results, nil
 }
 
-func (v *Vertices) get(key string, searchSwitch searchKey) (*Vertice, error) {
+func (v *Vertices) get(ctx context.Context, key string, searchSwitch searchKey) (*Vertice, error) {
 	var from, to Offset
 	switch searchSwitch {
 	case searchKeyDomain:
@@ -152,7 +153,7 @@ func (v *Vertices) get(key string, searchSwitch searchKey) (*Vertice, error) {
 		from.id == to.id && from.offset == to.offset {
 		return &Vertice{id: strconv.Itoa(from.id), domain: from.domain}, nil
 	}
-	buffer, err := v.getter.Get(from.file, from.offset, to.offset-from.offset)
+	buffer, err := v.getter.Get(ctx, from.file, from.offset, to.offset-from.offset)
 	if err != nil {
 		return nil, err
 	}

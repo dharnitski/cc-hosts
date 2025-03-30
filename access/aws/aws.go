@@ -27,7 +27,7 @@ func New(cfg aws.Config, bucketName string, folder string) *S3Getter {
 	}
 }
 
-func (g *S3Getter) Get(fileName string, offset int, length int) ([]byte, error) {
+func (g *S3Getter) Get(ctx context.Context, fileName string, offset int, length int) ([]byte, error) {
 	key := fmt.Sprintf("%s/%s", g.folder, fileName)
 	if offset < 0 {
 		return nil, fmt.Errorf("offset cannot be negative")

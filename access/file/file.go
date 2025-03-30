@@ -1,6 +1,7 @@
 package file
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -14,7 +15,7 @@ func NewGetter(folder string) *Getter {
 	return &Getter{folder: folder}
 }
 
-func (f *Getter) Get(fileName string, offset int, length int) ([]byte, error) {
+func (f *Getter) Get(ctx context.Context, fileName string, offset int, length int) ([]byte, error) {
 	fullName := filepath.Join(f.folder, fileName)
 	file, err := os.OpenFile(fullName, os.O_RDONLY, 0o644)
 	if err != nil {
@@ -23,7 +24,7 @@ func (f *Getter) Get(fileName string, offset int, length int) ([]byte, error) {
 	defer file.Close()
 
 	buffer := make([]byte, length)
-	ret, err :=  file.Seek(int64(offset), 0)
+	ret, err := file.Seek(int64(offset), 0)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to seek file: %w", err)
 	}

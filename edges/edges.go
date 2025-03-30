@@ -3,6 +3,7 @@ package edges
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -53,12 +54,12 @@ func NewEdges(getter access.Getter, offsets Offsets) *Edges {
 }
 
 // for source vertice id return list of target vertice ids
-func (v *Edges) Get(fromID string) ([]string, error) {
+func (v *Edges) Get(ctx context.Context, fromID string) ([]string, error) {
 	offsets := v.offsets.FindForFromID(fromID)
 
 	results := make([]string, 0)
 	for file, offset := range offsets {
-		buffer, err := v.getter.Get(file, offset.From.offset, offset.To.offset-offset.From.offset)
+		buffer, err := v.getter.Get(ctx, file, offset.From.offset, offset.To.offset-offset.From.offset)
 		if err != nil {
 			return nil, err
 		}

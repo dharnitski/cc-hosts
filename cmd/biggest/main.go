@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -18,6 +19,7 @@ const (
 )
 
 func main() {
+	ctx := context.Background()
 	biggestIDs := make(map[string]int)
 	edgesFolder := "data/edges"
 	err := loadBiggestHosts(edgesFolder, biggestIDs)
@@ -26,7 +28,7 @@ func main() {
 		return
 	}
 
-	err = convertAndSave(biggestIDs, "biggest.json")
+	err = convertAndSave(ctx, biggestIDs, "biggest.json")
 	if err != nil {
 		fmt.Printf("Error converting and saving: %v\n", err)
 		return
@@ -40,14 +42,14 @@ func main() {
 		return
 	}
 
-	err = convertAndSave(biggestIDs, "biggest.reversed.json")
+	err = convertAndSave(ctx, biggestIDs, "biggest.reversed.json")
 	if err != nil {
 		fmt.Printf("Error converting and saving: %v\n", err)
 		return
 	}
 }
 
-func convertAndSave(biggestIDs map[string]int, outFile string) error {
+func convertAndSave(ctx context.Context, biggestIDs map[string]int, outFile string) error {
 	fmt.Printf("Getting Domains for IDs\n")
 
 	offsets := vertices.Offsets{}
@@ -59,7 +61,7 @@ func convertAndSave(biggestIDs map[string]int, outFile string) error {
 
 	biggest := make(map[string]int)
 	for id, counter := range biggestIDs {
-		vertice, err := vertices.GetByID(id)
+		vertice, err := vertices.GetByID(ctx, id)
 		if err != nil {
 			fmt.Printf("Error getting vertice by ID %s: %v\n", id, err)
 			continue

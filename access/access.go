@@ -1,5 +1,7 @@
 package access
 
+import "context"
+
 const (
 	VerticesOffsetsFile     = "vertices.offsets.txt"
 	EdgesOffsetsFile        = "edges.offsets.txt"
@@ -7,5 +9,5 @@ const (
 )
 
 type Getter interface {
-	Get(fileName string, offset int, length int) ([]byte, error)
+	Get(ctx context.Context, fileName string, offset int, length int) ([]byte, error)
 }
