@@ -1,10 +1,8 @@
 package edges_test
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/access/file"
 	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/stretchr/testify/assert"
@@ -12,13 +10,12 @@ import (
 )
 
 func getEdges(t *testing.T) *edges.Edges {
-	offsets := edges.Offsets{}
-	err := offsets.Load(fmt.Sprintf("../data/%s", access.EdgesOffsetsFile))
+	offsets, err := edges.NewOffsets()
 	require.NoError(t, err)
-	return edges.NewEdges(file.NewGetter("../data/edges"), offsets)
+	return edges.NewEdges(file.NewGetter("../data/edges"), *offsets)
 }
 
-func TestVerticesGet(t *testing.T) {
+func TestEdgesGet(t *testing.T) {
 	t.Parallel()
 
 	v := getEdges(t)

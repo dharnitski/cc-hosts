@@ -2,11 +2,14 @@ package edges
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/dharnitski/cc-hosts/offsets"
 )
 
 const (
@@ -51,6 +54,24 @@ func loadOffset(line string) (Offset, error) {
 
 type Offsets struct {
 	offsets []Offset
+}
+
+func NewOffsets() (*Offsets, error) {
+	result := &Offsets{
+		offsets: make([]Offset, 0),
+	}
+	reader := bytes.NewReader(offsets.Edges)
+	err := result.loadFromReader(reader)
+	return result, err
+}
+
+func NewOffsetsReversed() (*Offsets, error) {
+	result := &Offsets{
+		offsets: make([]Offset, 0),
+	}
+	reader := bytes.NewReader(offsets.EdgesReversed)
+	err := result.loadFromReader(reader)
+	return result, err
 }
 
 func (v *Offsets) Append(offsets []Offset) {

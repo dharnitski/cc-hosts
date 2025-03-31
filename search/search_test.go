@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/access/aws"
 	"github.com/dharnitski/cc-hosts/access/file"
 	"github.com/dharnitski/cc-hosts/edges"
@@ -24,30 +23,28 @@ func TestSearcher_GetTargets(t *testing.T) {
 	t.Parallel()
 
 	rootFolder := "../data"
-	eOffsets := edges.Offsets{}
+
 	cfg, err := config.LoadDefaultConfig(t.Context())
 	require.NoError(t, err)
-	err = eOffsets.Load(path.Join(rootFolder, access.EdgesOffsetsFile))
+	eOffsets, err := edges.NewOffsets()
 	require.NoError(t, err)
 	edgesGetter := file.NewGetter(path.Join(rootFolder, edges.EdgesFolder))
-	out := edges.NewEdges(edgesGetter, eOffsets)
+	out := edges.NewEdges(edgesGetter, *eOffsets)
 
-	eOffsets = edges.Offsets{}
-	err = eOffsets.Load(path.Join(rootFolder, access.EdgesReversedOffsetFile))
+	offsetsReversed, err := edges.NewOffsetsReversed()
 	require.NoError(t, err)
 	// revEdgesGetter := file.NewGetter(path.Join(rootFolder, edges.EdgesReversedFolder))
 	revEdgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesReversedFolder)
-	in := edges.NewEdges(revEdgesGetter, eOffsets)
+	in := edges.NewEdges(revEdgesGetter, *offsetsReversed)
 
-	vOffsets := vertices.Offsets{}
-	err = vOffsets.Load(path.Join(rootFolder, access.VerticesOffsetsFile))
+	vOffsets, err := vertices.NewOffsets()
 	require.NoError(t, err)
 	// verticesGetter := file.NewGetter(path.Join(rootFolder, vertices.Folder))
 	verticesGetter := aws.New(cfg, aws.Bucket, vertices.Folder)
-	v := vertices.NewVertices(verticesGetter, vOffsets)
+	v := vertices.NewVertices(verticesGetter, *vOffsets)
 
 	searcher := search.NewSearcher(v, out, in)
-	results, err := searcher.GetTargets(t.Context(), "binaryedge.io")
+	results, err := searcher.GetTargets(t.Context(), "coalitioninc.com")
 	require.NoError(t, err)
 	assert.Equal(t, []string{"40fy.io", "app.binaryedge.io", "blog.binaryedge.io", "cloudflare.com", "coalitioninc.com", "cyberfables.io", "d1ehrggk1349y0.cloudfront.net", "facebook.com", "fonts.googleapis.com", "github.com", "linkedin.com", "maps.googleapis.com", "slack.binaryedge.io", "support.cloudflare.com", "twitter.com"}, results.Out)
 	assert.Equal(t, []string{}, results.In)
@@ -191,15 +188,13 @@ func TestSearcher_Missed(t *testing.T) {
 	inputs := testdata.GetInputs()
 	inputs = append(inputs, testdata.GetExpected()...)
 
-	eOffsets := edges.Offsets{}
-	err := eOffsets.Load(fmt.Sprintf("../data/%s", access.EdgesOffsetsFile))
+	eOffsets, err := edges.NewOffsets()
 	require.NoError(t, err)
-	e := edges.NewEdges(file.NewGetter("../data/edges"), eOffsets)
+	e := edges.NewEdges(file.NewGetter("../data/edges"), *eOffsets)
 
-	vOffsets := vertices.Offsets{}
-	err = vOffsets.Load(fmt.Sprintf("../data/%s", access.VerticesOffsetsFile))
+	vOffsets, err := vertices.NewOffsets()
 	require.NoError(t, err)
-	v := vertices.NewVertices(file.NewGetter("../data/vertices"), vOffsets)
+	v := vertices.NewVertices(file.NewGetter("../data/vertices"), *vOffsets)
 
 	// TODO: Use in and out edges
 	searcher := search.NewSearcher(v, e, e)

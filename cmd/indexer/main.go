@@ -9,19 +9,19 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/edges"
+	"github.com/dharnitski/cc-hosts/offsets"
 	"github.com/dharnitski/cc-hosts/vertices"
 )
 
 const (
-	dataFolder     = "data"
-	verticesFolder = dataFolder + "/vertices"
+	dataFolder = "data"
 )
 
 var (
 	edgesForwardFolder  = path.Join(dataFolder, edges.EdgesFolder)
 	edgesReversedFolder = path.Join(dataFolder, edges.EdgesReversedFolder)
+	verticesFolder      = path.Join(dataFolder, vertices.Folder)
 )
 
 func main() {
@@ -46,7 +46,7 @@ func createVerticesIndex() error {
 	if err != nil {
 		return fmt.Errorf("Error reading directory %q: %v", verticesFolder, err)
 	}
-	offsets := vertices.Offsets{}
+	results := vertices.Offsets{}
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
@@ -65,19 +65,19 @@ func createVerticesIndex() error {
 		if err != nil {
 			return fmt.Errorf("Error processing file %q: %v", filePath, err)
 		}
-		offsets.Append(items)
+		results.Append(items)
 	}
-	if offsets.Len() > 0 {
-		err := offsets.Validate()
+	if results.Len() > 0 {
+		err := results.Validate()
 		if err != nil {
 			return fmt.Errorf("Error validating offsets: %v", err)
 		}
-		saveFile := fmt.Sprintf("%s/%s", dataFolder, access.VerticesOffsetsFile)
-		err = offsets.Save(saveFile)
+		saveFile := fmt.Sprintf("%s/%s", offsets.Folder, offsets.VerticesOffsetsFile)
+		err = results.Save(saveFile)
 		if err != nil {
 			return fmt.Errorf("Error saving offsets: %v", err)
 		}
-		fmt.Printf("Saved %d Vertices offsets to %s\n", offsets.Len(), saveFile)
+		fmt.Printf("Saved %d Vertices offsets to %s\n", results.Len(), saveFile)
 	}
 	return nil
 }
@@ -127,11 +127,11 @@ func processOneVerticesFile(scanner *bufio.Scanner, fileName string) ([]vertices
 }
 
 func createForwardEdgesIndex() error {
-	return createEdgesIndex(edgesForwardFolder, access.EdgesOffsetsFile)
+	return createEdgesIndex(edgesForwardFolder, offsets.EdgesOffsetsFile)
 }
 
 func createBackwardEdgesIndex() error {
-	return createEdgesIndex(edgesReversedFolder, access.EdgesReversedOffsetFile)
+	return createEdgesIndex(edgesReversedFolder, offsets.EdgesReversedOffsetFile)
 }
 
 func createEdgesIndex(edgesFolder string, outFile string) error {
@@ -141,7 +141,7 @@ func createEdgesIndex(edgesFolder string, outFile string) error {
 	if err != nil {
 		return fmt.Errorf("Error reading directory %q: %v", edgesFolder, err)
 	}
-	offsets := edges.Offsets{}
+	results := edges.Offsets{}
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
@@ -160,19 +160,19 @@ func createEdgesIndex(edgesFolder string, outFile string) error {
 		if err != nil {
 			return fmt.Errorf("Error processing file %q: %v", filePath, err)
 		}
-		offsets.Append(items)
+		results.Append(items)
 	}
-	if offsets.Len() > 0 {
-		err := offsets.Validate()
+	if results.Len() > 0 {
+		err := results.Validate()
 		if err != nil {
 			return fmt.Errorf("Error validating offsets: %v", err)
 		}
-		saveFile := fmt.Sprintf("%s/%s", dataFolder, outFile)
-		err = offsets.Save(saveFile)
+		saveFile := fmt.Sprintf("%s/%s", offsets.Folder, outFile)
+		err = results.Save(saveFile)
 		if err != nil {
 			return fmt.Errorf("Error saving offsets: %v", err)
 		}
-		fmt.Printf("Saved %d edges offsets to %s\n", offsets.Len(), saveFile)
+		fmt.Printf("Saved %d edges offsets to %s\n", results.Len(), saveFile)
 	}
 	return nil
 }

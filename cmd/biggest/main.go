@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/access/file"
 	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/dharnitski/cc-hosts/vertices"
@@ -52,12 +51,11 @@ func main() {
 func convertAndSave(ctx context.Context, biggestIDs map[string]int, outFile string) error {
 	fmt.Printf("Getting Domains for IDs\n")
 
-	offsets := vertices.Offsets{}
-	err := offsets.Load(fmt.Sprintf("data/%s", access.VerticesOffsetsFile))
+	offsets, err := vertices.NewOffsets()
 	if err != nil {
 		return fmt.Errorf("Error loading offsets: %v", err)
 	}
-	vertices := vertices.NewVertices(file.NewGetter("data/vertices"), offsets)
+	vertices := vertices.NewVertices(file.NewGetter("data/vertices"), *offsets)
 
 	biggest := make(map[string]int)
 	for id, counter := range biggestIDs {

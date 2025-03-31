@@ -2,10 +2,14 @@ package vertices
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/dharnitski/cc-hosts/offsets"
 )
 
 const (
@@ -63,6 +67,15 @@ type Offsets struct {
 	offsets []Offset
 }
 
+func NewOffsets() (*Offsets, error) {
+	result := &Offsets{
+		offsets: make([]Offset, 0),
+	}
+	reader := bytes.NewReader(offsets.Vertices)
+	err := result.loadFromReader(reader)
+	return result, err
+}
+
 func (v *Offsets) Append(offsets []Offset) {
 	v.offsets = append(v.offsets, offsets...)
 }
@@ -99,7 +112,11 @@ func (v *Offsets) Load(fileName string) error {
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
+	return v.loadFromReader(file)
+}
+
+func (v *Offsets) loadFromReader(reader io.Reader) error {
+	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		offset, err := loadOffset(scanner.Text())
 		if err != nil {

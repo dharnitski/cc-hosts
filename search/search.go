@@ -20,13 +20,13 @@ func NewSearcher(v *vertices.Vertices, out *edges.Edges, in *edges.Edges) *Searc
 	return &Searcher{v: v, out: out, in: in}
 }
 
-type SearcherResult struct {
-	Target string
-	Out    []string
-	In     []string
+type Result struct {
+	Target string   `json:"target"`
+	Out    []string `json:"out"`
+	In     []string `json:"in"`
 }
 
-func (s *Searcher) GetTargets(ctx context.Context, domain string) (*SearcherResult, error) {
+func (s *Searcher) GetTargets(ctx context.Context, domain string) (*Result, error) {
 	reversed := vertices.ReverseDomain(domain)
 	vertice, err := s.v.GetByDomain(ctx, reversed)
 	if err != nil {
@@ -43,7 +43,7 @@ func (s *Searcher) GetTargets(ctx context.Context, domain string) (*SearcherResu
 	if err != nil {
 		return nil, err
 	}
-	return &SearcherResult{Target: domain, Out: outs, In: ins}, nil
+	return &Result{Target: domain, Out: outs, In: ins}, nil
 }
 
 func (s *Searcher) getDomains(ctx context.Context, verticeID string, edges *edges.Edges) ([]string, error) {

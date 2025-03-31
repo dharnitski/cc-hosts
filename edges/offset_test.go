@@ -1,11 +1,9 @@
 package edges_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
-	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -161,8 +159,7 @@ func TestOffsets_Validate(t *testing.T) {
 func TestOffsetsFindForFromID(t *testing.T) {
 	t.Parallel()
 
-	offsets := edges.Offsets{}
-	err := offsets.Load(fmt.Sprintf("../data/%s", access.EdgesOffsetsFile))
+	offsets, err := edges.NewOffsets()
 	require.NoError(t, err)
 
 	tests := []struct {
