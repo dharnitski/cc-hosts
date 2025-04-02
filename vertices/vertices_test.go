@@ -12,6 +12,7 @@ import (
 func getVertices(t *testing.T) *vertices.Vertices {
 	offsets, err := vertices.NewOffsets()
 	require.NoError(t, err)
+
 	return vertices.NewVertices(file.NewGetter("../data/vertices"), *offsets)
 }
 

@@ -25,17 +25,20 @@ func TestSearcher_GetTargets(t *testing.T) {
 	// require.NoError(t, err)
 	eOffsets, err := edges.NewOffsets()
 	require.NoError(t, err)
+
 	edgesGetter := file.NewGetter(path.Join(rootFolder, edges.EdgesFolder))
 	out := edges.NewEdges(edgesGetter, *eOffsets)
 
 	offsetsReversed, err := edges.NewOffsetsReversed()
 	require.NoError(t, err)
+
 	revEdgesGetter := file.NewGetter(path.Join(rootFolder, edges.EdgesReversedFolder))
 	// revEdgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesReversedFolder)
 	in := edges.NewEdges(revEdgesGetter, *offsetsReversed)
 
 	vOffsets, err := vertices.NewOffsets()
 	require.NoError(t, err)
+
 	verticesGetter := file.NewGetter(path.Join(rootFolder, vertices.Folder))
 	// verticesGetter := aws.New(cfg, aws.Bucket, vertices.Folder)
 	v := vertices.NewVertices(verticesGetter, *vOffsets)
@@ -48,136 +51,6 @@ func TestSearcher_GetTargets(t *testing.T) {
 	assert.Equal(t, "binaryedge.io", results.Target)
 }
 
-var socialNetworkKeywords = []string{
-	"2mdn.net",
-	"3gppnetwork.org",
-	"a2z.com",
-	"aaplimg.com",
-	"akadns.net",
-	"akamai.net",
-	"akamaiedge.net",
-	"amazon-adsystem.com",
-	"amazon.com",
-	"amazonaws.com",
-	"ampproject.org",
-	"android.com",
-	"app-analytics-services.com",
-	"app-measurement.com",
-	"apple-dns.net",
-	"apple.com",
-	"applovin.com",
-	"appsflyersdk.com",
-	"atlassian.net",
-	"azure.com",
-	"baidu.com",
-	"bing.com",
-	"bsky.app",
-	"bytefcdn-oversea.com",
-	"bytefcdn-ttpeu.com",
-	"casalemedia.com",
-	"cdn-apple.com",
-	"cdn77.org",
-	"cdninstagram.com",
-	"cloudflare-dns.com",
-	"cloudflare.com",
-	"cloudforce.com",
-	"cloudfront.net",
-	"crashlytics.com",
-	"criteo.com",
-	"crunchbase.com",
-	"digicert.com",
-	"dns.google",
-	"documentforce.com",
-	"doubleclick.net",
-	"doubleverify.com",
-	"facebook.com",
-	"fastly.net",
-	"fbcdn.net",
-	"force.com",
-	"ggpht.com",
-	"gmail.com",
-	"goo.gl",
-	"google-analytics.com",
-	"google.com",
-	"googleadservices.com",
-	"googleapis.com",
-	"googlesyndication.com",
-	"googletagmanager.com",
-	"googleusercontent.com",
-	"googlevideo.com",
-	"gstatic.com",
-	"gvt1.com",
-	"gvt2.com",
-	"icims.com",
-	"icloud.com",
-	"instagram.com",
-	"lencr.org",
-	"linkedin.com",
-	"live.com",
-	"mailchi.mp",
-	"mailchimp.com",
-	"microsoft.com",
-	"microsoftonline.com",
-	"miui.com",
-	"msftncsi.com",
-	"msn.com",
-	"mzstatic.com",
-	"netflix.com",
-	"ntp.org",
-	"office.com",
-	"office365.com",
-	"one.one",
-	"pangle.io",
-	"pinterest.com",
-	"qlivecdn.com",
-	"qq.com",
-	"rbxcdn.com",
-	"roblox.com",
-	"rocket-cdn.com",
-	"root-servers.net",
-	"salesforce.com",
-	"samsung.com",
-	"sentry.io",
-	"sharepoint.com",
-	"shopify.com",
-	"skype.com",
-	"snapchat.com",
-	"spotify.com",
-	"taboola.com",
-	"threads.net",
-	"tiktok.com",
-	"tiktokcdn-eu.com",
-	"tiktokcdn-us.com",
-	"tiktokcdn.com",
-	"tiktokv.com",
-	"trafficmanager.net",
-	"ttlivecdn.com",
-	"twitter.com",
-	"ui.com",
-	"unity3d.com",
-	"visualforce.com",
-	"vungle.com",
-	"whatsapp.net",
-	"wikipedia.org",
-	"windows.com",
-	"windows.net",
-	"windowsupdate.com",
-	"wordpress.com",
-	"wordpress.org",
-	"wp.com",
-	"wpengine.com",
-	"x.com",
-	"xiaomi.com",
-	"yahoo.com",
-	"yelp-ir.com",
-	"yelp-support.com",
-	"yelp.ca",
-	"yelp.com",
-	"youtube.com",
-	"ytimg.com",
-	"zendesk.com",
-}
-
 func TestSearcher_Missed(t *testing.T) {
 	// t.Skip()
 	t.Parallel()
@@ -187,14 +60,17 @@ func TestSearcher_Missed(t *testing.T) {
 
 	eOffsets, err := edges.NewOffsets()
 	require.NoError(t, err)
+
 	e := edges.NewEdges(file.NewGetter("../data/edges"), *eOffsets)
 
 	reversedOffsets, err := edges.NewOffsetsReversed()
 	require.NoError(t, err)
+
 	reversed := edges.NewEdges(file.NewGetter("../data/edges_reversed"), *reversedOffsets)
 
 	vOffsets, err := vertices.NewOffsets()
 	require.NoError(t, err)
+
 	v := vertices.NewVertices(file.NewGetter("../data/vertices"), *vOffsets)
 
 	// TODO: Use in and out edges
@@ -209,8 +85,10 @@ func TestSearcher_Missed(t *testing.T) {
 
 		if results == nil {
 			fmt.Printf("no results for %s\n", input)
+
 			continue
 		}
+
 		out = append(out, *results)
 	}
 	// save out to JSON file

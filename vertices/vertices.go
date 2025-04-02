@@ -40,6 +40,7 @@ func ReverseDomain(domain string) string {
 	for i, j := 0, len(parts)-1; i < j; i, j = i+1, j-1 {
 		parts[i], parts[j] = parts[j], parts[i]
 	}
+
 	return strings.Join(parts, ".")
 }
 
@@ -52,8 +53,9 @@ func (v *Vertice) ReversedDomain() string {
 func LoadVertice(line string) (*Vertice, error) {
 	parts := strings.Split(line, "\t")
 	if len(parts) != 2 {
-		return nil, fmt.Errorf("Invalid line: %s, %d parts", line, len(parts))
+		return nil, fmt.Errorf("invalid line: %s, %d parts", line, len(parts))
 	}
+
 	return &Vertice{id: parts[0], domain: parts[1]}, nil
 }
 
@@ -93,9 +95,11 @@ func (v *Vertices) GetByIDs(ctx context.Context, ids []string) ([]Vertice, error
 	}
 
 	resultChan := make(chan result, len(ids))
+
 	var wg sync.WaitGroup
 
 	semaphore := make(chan struct{}, Concurrency)
+
 	for i, id := range ids {
 		wg.Add(1)
 		semaphore <- struct{}{}
@@ -123,30 +127,36 @@ func (v *Vertices) GetByIDs(ctx context.Context, ids []string) ([]Vertice, error
 	// Prepare results in order
 	results := []Vertice{}
 	errs := []error{}
+
 	for res := range resultChan {
 		if res.err != nil {
 			errs = append(errs, res.err)
 		}
+
 		if res.vertice != nil {
 			results = append(results, *res.vertice)
 		}
 	}
+
 	if len(errs) > 0 {
 		return results, fmt.Errorf("Errors: %v", errs)
 	}
+
 	return results, nil
 }
 
 func (v *Vertices) get(ctx context.Context, key string, searchSwitch searchKey) (*Vertice, error) {
 	var from, to Offset
+
 	switch searchSwitch {
 	case searchKeyDomain:
 		from, to = v.offsets.FindForDomain(key)
 	case searchKeyID:
 		id, err := strconv.Atoi(key)
 		if err != nil {
-			return nil, fmt.Errorf("Invalid ID: %s", key)
+			return nil, fmt.Errorf("invalid ID: %s", key)
 		}
+
 		from, to = v.offsets.FindForID(id)
 	}
 	// if we lucky and Vertice is in offset
@@ -154,6 +164,7 @@ func (v *Vertices) get(ctx context.Context, key string, searchSwitch searchKey) 
 		from.id == to.id && from.offset == to.offset {
 		return &Vertice{id: strconv.Itoa(from.id), domain: from.domain}, nil
 	}
+
 	buffer, err := v.getter.Get(ctx, from.file, from.offset, to.offset-from.offset)
 	if err != nil {
 		return nil, err
@@ -164,13 +175,16 @@ func (v *Vertices) get(ctx context.Context, key string, searchSwitch searchKey) 
 
 func findVertice(buffer []byte, key string, searchSwitch searchKey) (*Vertice, error) {
 	reader := bytes.NewReader(buffer)
+
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		line := scanner.Text()
+
 		vertice, err := LoadVertice(line)
 		if err != nil {
 			return nil, err
 		}
+
 		switch searchSwitch {
 		case searchKeyDomain:
 			if vertice.domain == key {
@@ -182,8 +196,9 @@ func findVertice(buffer []byte, key string, searchSwitch searchKey) (*Vertice, e
 			}
 		}
 	}
+
 	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("Error reading file for key %s: %v\n", key, err)
+		return nil, fmt.Errorf("error reading file for key %s: %w", key, err)
 	}
 
 	return nil, nil

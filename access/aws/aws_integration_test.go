@@ -16,6 +16,7 @@ func TestOffsetBucket(t *testing.T) {
 	t.Parallel()
 	cfg, err := config.LoadDefaultConfig(t.Context())
 	require.NoError(t, err)
+
 	getter := aws.New(cfg, aws.Bucket, vertices.Folder)
 
 	buffer, err := getter.Get(t.Context(), "part-00000-4ba7987d-67a0-4f7d-b410-1d92df440699-c000.txt", 2097161, 16)

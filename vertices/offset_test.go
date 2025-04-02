@@ -11,6 +11,7 @@ import (
 
 func TestVerticesOffset_String(t *testing.T) {
 	t.Parallel()
+
 	vo := vertices.NewOffset(123, "com.example", 42, "vertices.txt")
 	expected := "com.example\t123\t42\tvertices.txt"
 	assert.Equal(t, expected, vo.String())
@@ -18,6 +19,7 @@ func TestVerticesOffset_String(t *testing.T) {
 
 func TestOffsets_SaveLoad(t *testing.T) {
 	t.Parallel()
+
 	items := []vertices.Offset{
 		vertices.NewOffset(123, "com.example", 42, "vertices.txt"),
 		vertices.NewOffset(456, "org.example", 84, "vertices.txt"),
@@ -28,6 +30,7 @@ func TestOffsets_SaveLoad(t *testing.T) {
 	fileName := "test_offsets.txt"
 	err := offsets.Save(fileName)
 	require.NoError(t, err)
+
 	defer os.Remove(fileName)
 
 	// Verify the file content
@@ -41,6 +44,7 @@ func TestOffsets_SaveLoad(t *testing.T) {
 	err = actual.Load(fileName)
 	require.NoError(t, err)
 	assert.Equal(t, len(items), actual.Len())
+
 	for i, offset := range actual.Items() {
 		assert.Equal(t, items[i], offset)
 	}
@@ -50,6 +54,7 @@ func TestOffsets_Load_InvalidFile(t *testing.T) {
 	t.Parallel()
 	// Try to load offsets from a non-existent file
 	var offsets vertices.Offsets
+
 	err := offsets.Load("non_existent_file.txt")
 	if err == nil {
 		t.Fatal("Expected an error, but got nil")
@@ -61,14 +66,17 @@ func TestOffsets_Load_InvalidLine(t *testing.T) {
 	// Create a temporary file with invalid test data
 	fileName := "test_invalid_offsets.txt"
 	content := "invalid_line\norg.example\t456\tvertices.txt\n"
+
 	err := os.WriteFile(fileName, []byte(content), 0o644)
 	if err != nil {
 		t.Fatalf("Expected no error, but got %v", err)
 	}
+
 	defer os.Remove(fileName)
 
 	// Try to load the offsets from the file
 	var offsets vertices.Offsets
+
 	err = offsets.Load(fileName)
 	if err == nil {
 		t.Fatal("Expected an error, but got nil")
@@ -77,6 +85,7 @@ func TestOffsets_Load_InvalidLine(t *testing.T) {
 
 func TestOffsets_Validate(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name     string
 		offsets  []vertices.Offset
@@ -93,14 +102,14 @@ func TestOffsets_Validate(t *testing.T) {
 		{
 			name:     "No offsets",
 			offsets:  []vertices.Offset{},
-			expected: "No offsets found",
+			expected: "no offsets found",
 		},
 		{
 			name: "Invalid offset",
 			offsets: []vertices.Offset{
 				vertices.NewOffset(-123, "com.example", 42, "vertices.txt"),
 			},
-			expected: "Invalid offset: -123",
+			expected: "invalid offset: -123",
 		},
 		{
 			name: "Offset goes down",
@@ -108,14 +117,14 @@ func TestOffsets_Validate(t *testing.T) {
 				vertices.NewOffset(456, "com.example", 42, "vertices.txt"),
 				vertices.NewOffset(123, "org.example", 84, "vertices.txt"),
 			},
-			expected: "Offset goes down: 123, previous 456",
+			expected: "offset goes down: 123, previous 456",
 		},
 		{
 			name: "Empty domain",
 			offsets: []vertices.Offset{
 				vertices.NewOffset(123, "", 42, "vertices.txt"),
 			},
-			expected: "Empty domain",
+			expected: "empty domain",
 		},
 		{
 			name: "Domain goes down",
@@ -123,7 +132,7 @@ func TestOffsets_Validate(t *testing.T) {
 				vertices.NewOffset(123, "org.example", 42, "vertices.txt"),
 				vertices.NewOffset(456, "com.example", 84, "vertices.txt"),
 			},
-			expected: "Domain goes down: com.example, previous org.example",
+			expected: "domain goes down: com.example, previous org.example",
 		},
 		{
 			name: "ID goes down",
@@ -138,15 +147,17 @@ func TestOffsets_Validate(t *testing.T) {
 			offsets: []vertices.Offset{
 				vertices.NewOffset(123, "org.example", 42, ""),
 			},
-			expected: "Empty file",
+			expected: "empty file",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			offsets := vertices.Offsets{}
 			offsets.Append(tt.offsets)
+
 			err := offsets.Validate()
 			if tt.expected == "" {
 				assert.NoError(t, err)
@@ -175,6 +186,7 @@ func TestOffsetsFindForDomain(t *testing.T) {
 	for _, domain := range tests {
 		t.Run(domain, func(t *testing.T) {
 			t.Parallel()
+
 			start, finish := results.FindForDomain(domain)
 			assert.LessOrEqual(t, start.Domain(), domain)
 			assert.GreaterOrEqual(t, finish.Domain(), domain)

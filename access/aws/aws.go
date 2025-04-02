@@ -2,8 +2,10 @@ package aws
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -29,11 +31,13 @@ func New(cfg aws.Config, bucketName string, folder string) *S3Getter {
 
 func (g *S3Getter) Get(ctx context.Context, fileName string, offset int, length int) ([]byte, error) {
 	key := fmt.Sprintf("%s/%s", g.folder, fileName)
+
 	if offset < 0 {
-		return nil, fmt.Errorf("offset cannot be negative")
+		return nil, errors.New("offset cannot be negative")
 	}
+
 	if length <= 0 {
-		return nil, fmt.Errorf("length must be positive")
+		return nil, errors.New("length must be positive")
 	}
 
 	rangeStr := fmt.Sprintf("bytes=%d-%d", offset, offset+length-1)
@@ -47,13 +51,19 @@ func (g *S3Getter) Get(ctx context.Context, fileName string, offset int, length 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get object from S3 bucket %s, key %s : %w", g.bucketName, key, err)
 	}
-	defer result.Body.Close()
+
+	defer func() {
+		if err := result.Body.Close(); err != nil {
+			log.Printf("error closing S3 Body for file %s: %v", fileName, err)
+		}
+	}()
 
 	if aws.ToInt64(result.ContentLength) != int64(length) {
-		return nil, fmt.Errorf("unexpected content length")
+		return nil, errors.New("unexpected content length")
 	}
 
 	buf := make([]byte, length)
+
 	_, err = io.ReadFull(result.Body, buf)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)

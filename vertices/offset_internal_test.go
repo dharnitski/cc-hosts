@@ -9,6 +9,7 @@ import (
 
 func TestLoadVerticesOffset(t *testing.T) {
 	t.Parallel()
+
 	line := "example.com\t123\t42\tvertices.txt"
 	vo, err := loadOffset(line)
 	require.NoError(t, err)
@@ -21,6 +22,7 @@ func TestLoadVerticesOffset(t *testing.T) {
 
 func TestLoadVerticesOffset_InvalidLine(t *testing.T) {
 	t.Parallel()
+
 	line := "invalid_line"
 	_, err := loadOffset(line)
 	require.Error(t, err)
@@ -28,6 +30,7 @@ func TestLoadVerticesOffset_InvalidLine(t *testing.T) {
 
 func TestLoadVerticesOffset_InvalidOffset(t *testing.T) {
 	t.Parallel()
+
 	line := "example.com\tinvalid_offset\tvertices.txt"
 	_, err := loadOffset(line)
 	require.Error(t, err)

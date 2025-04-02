@@ -23,6 +23,7 @@ func HandleRequest(ctx context.Context, event *Request) (*search.Result, error) 
 	if event == nil {
 		return &search.Result{}, nil
 	}
+
 	return searcher.GetTargets(ctx, event.Domain)
 }
 
@@ -42,6 +43,7 @@ func HandleGateway(ctx context.Context, request events.APIGatewayProxyRequest) (
 			Body:       err.Error(),
 		}, err
 	}
+
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
@@ -62,10 +64,12 @@ func createSearcher(ctx context.Context) (*search.Searcher, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	eOffsets, err := edges.NewOffsets()
 	if err != nil {
 		return nil, err
 	}
+
 	edgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesFolder)
 	out := edges.NewEdges(edgesGetter, *eOffsets)
 
@@ -73,6 +77,7 @@ func createSearcher(ctx context.Context) (*search.Searcher, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	revEdgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesReversedFolder)
 	in := edges.NewEdges(revEdgesGetter, *reversedOffsets)
 
@@ -80,19 +85,24 @@ func createSearcher(ctx context.Context) (*search.Searcher, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	verticesGetter := aws.New(cfg, aws.Bucket, vertices.Folder)
 	v := vertices.NewVertices(verticesGetter, *vOffsets)
 
 	searcher := search.NewSearcher(v, out, in)
+
 	return searcher, nil
 }
 
 func main() {
 	var err error
+
 	ctx := context.Background()
+
 	searcher, err = createSearcher(ctx)
 	if err != nil {
 		panic(err)
 	}
+
 	lambda.Start(HandleGateway)
 }

@@ -12,6 +12,7 @@ import (
 func getEdges(t *testing.T) *edges.Edges {
 	offsets, err := edges.NewOffsets()
 	require.NoError(t, err)
+
 	return edges.NewEdges(file.NewGetter("../data/edges"), *offsets)
 }
 

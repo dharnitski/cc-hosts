@@ -36,8 +36,9 @@ func (v *Edge) ToID() string {
 func LoadEdge(line string) (*Edge, error) {
 	parts := strings.Split(line, "\t")
 	if len(parts) != 2 {
-		return nil, fmt.Errorf("Invalid line: %s, %d parts", line, len(parts))
+		return nil, fmt.Errorf("invalid line: %q, %d parts", line, len(parts))
 	}
+
 	return &Edge{fromID: parts[0], toID: parts[1]}, nil
 }
 
@@ -54,7 +55,7 @@ func NewEdges(getter access.Getter, offsets Offsets) *Edges {
 	}
 }
 
-// for source vertice id return list of target vertice ids
+// for source vertice id return list of target vertice ids.
 func (v *Edges) Get(ctx context.Context, fromID string) ([]string, error) {
 	offsets := v.offsets.FindForFromID(fromID)
 
@@ -64,18 +65,22 @@ func (v *Edges) Get(ctx context.Context, fromID string) ([]string, error) {
 	}
 
 	results := make(chan result, len(offsets))
+
 	var wg sync.WaitGroup
 
 	for file, offset := range offsets {
 		wg.Add(1)
+
 		go func(file string, offset TwoOffsets) {
 			defer wg.Done()
 
 			buffer, err := v.getter.Get(ctx, file, offset.From.offset, offset.To.offset-offset.From.offset)
 			if err != nil {
 				results <- result{nil, err}
+
 				return
 			}
+
 			edges, err := findEdges(buffer, fromID)
 			results <- result{edges, err}
 		}(file, offset)
@@ -87,10 +92,12 @@ func (v *Edges) Get(ctx context.Context, fromID string) ([]string, error) {
 	}()
 
 	allEdges := make([]string, 0)
+
 	for res := range results {
 		if res.err != nil {
 			return nil, res.err
 		}
+
 		allEdges = append(allEdges, res.edges...)
 		if len(allEdges) >= DefaultMaxSize {
 			allEdges = allEdges[:DefaultMaxSize]
@@ -98,6 +105,7 @@ func (v *Edges) Get(ctx context.Context, fromID string) ([]string, error) {
 	}
 
 	sort.Strings(allEdges)
+
 	return allEdges, nil
 }
 
@@ -105,12 +113,15 @@ func findEdges(buffer []byte, fromID string) ([]string, error) {
 	reader := bytes.NewReader(buffer)
 	scanner := bufio.NewScanner(reader)
 	results := make([]string, 0)
+
 	for scanner.Scan() {
 		line := scanner.Text()
+
 		vertice, err := LoadEdge(line)
 		if err != nil {
 			return nil, err
 		}
+
 		if vertice.fromID == fromID {
 			results = append(results, vertice.toID)
 			if len(results) >= DefaultMaxSize {
@@ -123,8 +134,9 @@ func findEdges(buffer []byte, fromID string) ([]string, error) {
 			}
 		}
 	}
+
 	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("Error reading file: %v\n", err)
+		return nil, fmt.Errorf("error reading file: %w", err)
 	}
 
 	return results, nil
