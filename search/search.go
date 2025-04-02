@@ -2,6 +2,7 @@ package search
 
 import (
 	"context"
+	"fmt"
 	"sort"
 
 	"github.com/dharnitski/cc-hosts/edges"
@@ -27,6 +28,9 @@ type Result struct {
 }
 
 func (s *Searcher) GetTargets(ctx context.Context, domain string) (*Result, error) {
+	if domain == "" {
+		return nil, fmt.Errorf("domain is empty")
+	}
 	reversed := vertices.ReverseDomain(domain)
 	vertice, err := s.v.GetByDomain(ctx, reversed)
 	if err != nil {
