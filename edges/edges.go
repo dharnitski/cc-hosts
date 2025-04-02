@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/dharnitski/cc-hosts/access"
 )
@@ -57,20 +58,44 @@ func NewEdges(getter access.Getter, offsets Offsets) *Edges {
 func (v *Edges) Get(ctx context.Context, fromID string) ([]string, error) {
 	offsets := v.offsets.FindForFromID(fromID)
 
-	results := make([]string, 0)
-	for file, offset := range offsets {
-		buffer, err := v.getter.Get(ctx, file, offset.From.offset, offset.To.offset-offset.From.offset)
-		if err != nil {
-			return nil, err
-		}
-		edges, err := findEdges(buffer, fromID)
-		if err != nil {
-			return results, err
-		}
-		results = append(results, edges...)
+	type result struct {
+		edges []string
+		err   error
 	}
-	sort.Strings(results)
-	return results, nil
+
+	results := make(chan result, len(offsets))
+	var wg sync.WaitGroup
+
+	for file, offset := range offsets {
+		wg.Add(1)
+		go func(file string, offset TwoOffsets) {
+			defer wg.Done()
+
+			buffer, err := v.getter.Get(ctx, file, offset.From.offset, offset.To.offset-offset.From.offset)
+			if err != nil {
+				results <- result{nil, err}
+				return
+			}
+			edges, err := findEdges(buffer, fromID)
+			results <- result{edges, err}
+		}(file, offset)
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	allEdges := make([]string, 0)
+	for res := range results {
+		if res.err != nil {
+			return nil, res.err
+		}
+		allEdges = append(allEdges, res.edges...)
+	}
+
+	sort.Strings(allEdges)
+	return allEdges, nil
 }
 
 func findEdges(buffer []byte, fromID string) ([]string, error) {
