@@ -3,8 +3,10 @@ package vertices
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -13,8 +15,8 @@ import (
 )
 
 const (
-	// fileChunkSize is the size of the chunk of the file to be read in bytes
-	FileChunkSize = 1024 * 1024 // 1MB
+	// fileChunkSize is the size of the chunk of the file to be read in bytes.
+	FileChunkSize = 1024 * 32 // 32 KB
 )
 
 type Offset struct {
@@ -27,6 +29,7 @@ type Offset struct {
 	// in file ot 0 based line number
 	id int
 	// vertices file name without path
+	// TODO: this is not memory efficient structure, the same string repeated many times and uses memory for copies
 	file string
 }
 
@@ -34,7 +37,7 @@ func NewOffset(offset int, domain string, id int, file string) Offset {
 	return Offset{offset: offset, domain: domain, id: id, file: file}
 }
 
-// save in format "domain \t offset \t file"
+// save in format "domain \t offset \t file".
 func (v Offset) String() string {
 	return fmt.Sprintf("%s\t%d\t%d\t%s", v.domain, v.offset, v.id, v.file)
 }
@@ -50,16 +53,19 @@ func (v Offset) Domain() string {
 func loadOffset(line string) (Offset, error) {
 	parts := strings.Split(line, "\t")
 	if len(parts) != 4 {
-		return Offset{}, fmt.Errorf("Invalid line: %s, %d parts", line, len(parts))
+		return Offset{}, fmt.Errorf("invalid line: %s, %d parts", line, len(parts))
 	}
+
 	offset, err := strconv.Atoi(parts[1])
 	if err != nil {
-		return Offset{}, fmt.Errorf("Invalid offset: %s", parts[1])
+		return Offset{}, fmt.Errorf("invalid offset: %s", parts[1])
 	}
+
 	id, err := strconv.Atoi(parts[2])
 	if err != nil {
-		return Offset{}, fmt.Errorf("Invalid id: %s", parts[2])
+		return Offset{}, fmt.Errorf("invalid id: %s", parts[2])
 	}
+
 	return Offset{offset: offset, domain: parts[0], id: id, file: parts[3]}, nil
 }
 
@@ -73,6 +79,7 @@ func NewOffsets() (*Offsets, error) {
 	}
 	reader := bytes.NewReader(offsets.Vertices)
 	err := result.loadFromReader(reader)
+
 	return result, err
 }
 
@@ -80,37 +87,49 @@ func (v *Offsets) Append(offsets []Offset) {
 	v.offsets = append(v.offsets, offsets...)
 }
 
-func (v Offsets) Items() []Offset {
+func (v *Offsets) Items() []Offset {
 	return v.offsets
 }
 
-func (v Offsets) Len() int {
+func (v *Offsets) Len() int {
 	return len(v.offsets)
 }
 
-func (v Offsets) Save(fileName string) error {
-	file, err := os.Create(fileName)
+func (v *Offsets) Save(fileName string) error {
+	file, err := os.Create(fileName) //nolint:gosec
 	if err != nil {
-		return fmt.Errorf("Error creating file %q: %v\n", fileName, err)
+		return fmt.Errorf("error creating file %q: %w", fileName, err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Printf("error closing file %s: %v", fileName, err)
+		}
+	}()
 
 	for _, offset := range v.offsets {
 		_, err := file.WriteString(offset.String() + "\n")
 		if err != nil {
-			return fmt.Errorf("Error writing to file %q: %v\n", fileName, err)
+			return fmt.Errorf("error writing to file %q: %w", fileName, err)
 		}
 	}
+
 	return nil
 }
 
 func (v *Offsets) Load(fileName string) error {
 	v.offsets = make([]Offset, 0)
-	file, err := os.Open(fileName)
+
+	file, err := os.Open(fileName) //nolint:gosec
 	if err != nil {
-		return fmt.Errorf("Error opening file %q: %v\n", fileName, err)
+		return fmt.Errorf("error opening file %q: %w", fileName, err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Printf("error closing file %s: %v", fileName, err)
+		}
+	}()
 
 	return v.loadFromReader(file)
 }
@@ -120,45 +139,52 @@ func (v *Offsets) loadFromReader(reader io.Reader) error {
 	for scanner.Scan() {
 		offset, err := loadOffset(scanner.Text())
 		if err != nil {
-			return fmt.Errorf("Error loading offset: %v\n", err)
+			return fmt.Errorf("error loading offset: %w", err)
 		}
+
 		v.offsets = append(v.offsets, offset)
 	}
+
 	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("Error reading file: %v\n", err)
+		return fmt.Errorf("error reading file: %w", err)
 	}
+
 	return nil
 }
 
 func (v *Offsets) Validate() error {
 	if v.Len() == 0 {
-		return fmt.Errorf("No offsets found")
+		return errors.New("no offsets found")
 	}
 
 	previousOffset := 0
 	previousDomain := ""
 	previousFile := ""
 	previousID := -1
+
 	for _, offset := range v.offsets {
 		// offset
 		if offset.offset < 0 {
-			return fmt.Errorf("Invalid offset: %d", offset.offset)
+			return fmt.Errorf("invalid offset: %d", offset.offset)
 		}
 		// we reset offset when we change file
 		if previousFile == offset.file {
 			if offset.offset <= previousOffset {
-				return fmt.Errorf("Offset goes down: %d, previous %d", offset.offset, previousOffset)
+				return fmt.Errorf("offset goes down: %d, previous %d", offset.offset, previousOffset)
 			}
 		}
+
 		previousOffset = offset.offset
 
 		// domain
 		if offset.domain == "" {
-			return fmt.Errorf("Empty domain")
+			return errors.New("empty domain")
 		}
+
 		if offset.domain <= previousDomain {
-			return fmt.Errorf("Domain goes down: %s, previous %s", offset.domain, previousDomain)
+			return fmt.Errorf("domain goes down: %s, previous %s", offset.domain, previousDomain)
 		}
+
 		previousDomain = offset.domain
 
 		// id
@@ -166,18 +192,21 @@ func (v *Offsets) Validate() error {
 		if id <= previousID {
 			return fmt.Errorf("ID goes down: %d, previous %d", id, previousID)
 		}
+
 		previousID = id
 
 		// file
 		if offset.file == "" {
-			return fmt.Errorf("Empty file")
+			return errors.New("empty file")
 		}
+
 		previousFile = offset.file
 	}
+
 	return nil
 }
 
-// return from and to offsets for domain to fetch data from file
+// return from and to offsets for domain to fetch data from file.
 func (v *Offsets) FindForDomain(domain string) (Offset, Offset) {
 	items := v.offsets
 	if len(items) == 0 {
@@ -192,6 +221,7 @@ func (v *Offsets) FindForDomain(domain string) (Offset, Offset) {
 	if domain < items[left].domain {
 		return Offset{}, items[left]
 	}
+
 	if domain > items[right].domain {
 		return items[right], Offset{}
 	}
@@ -232,6 +262,7 @@ func (v *Offsets) FindForID(id int) (Offset, Offset) {
 	if id < items[left].id {
 		return Offset{}, items[left]
 	}
+
 	if id > items[right].id {
 		return items[right], Offset{}
 	}
