@@ -14,7 +14,7 @@ import (
 
 const (
 	// fileChunkSize is the size of the chunk of the file to be read in bytes
-	FileChunkSize = 1024 * 1024 // 1MB
+	FileChunkSize = 1024 * 128 // 128 KB
 )
 
 type Offset struct {
