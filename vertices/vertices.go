@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	Concurrency = 10
+	Concurrency = 100
 	Folder      = "vertices"
 )
 
@@ -116,6 +116,7 @@ func (v *Vertices) GetByIDs(ctx context.Context, ids []string) ([]Vertice, error
 	// Close the channel when all goroutines are done
 	go func() {
 		wg.Wait()
+		close(semaphore)
 		close(resultChan)
 	}()
 
