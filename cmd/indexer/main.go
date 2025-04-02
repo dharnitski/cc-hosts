@@ -18,6 +18,7 @@ const (
 	dataFolder = "data"
 )
 
+//nolint:gochecknoglobals
 var (
 	edgesForwardFolder  = path.Join(dataFolder, edges.EdgesFolder)
 	edgesReversedFolder = path.Join(dataFolder, edges.EdgesReversedFolder)
@@ -42,7 +43,7 @@ func main() {
 }
 
 func createVerticesIndex() error {
-	fmt.Printf("Loading  Vertices from %s folder\n", verticesFolder)
+	log.Printf("Loading  Vertices from %s folder\n", verticesFolder)
 	// entries are sorted by filename
 	entries, err := os.ReadDir(verticesFolder)
 	if err != nil {
@@ -57,13 +58,18 @@ func createVerticesIndex() error {
 		}
 
 		filePath := filepath.Join(verticesFolder, entry.Name())
-		fmt.Printf("Processing Vertices file: %s\n", filePath)
+		log.Printf("Processing Vertices file: %s\n", filePath)
 
-		file, err := os.Open(filePath)
+		file, err := os.Open(filePath) //nolint:gosec
 		if err != nil {
 			return fmt.Errorf("error opening file %q: %w", filePath, err)
 		}
-		defer file.Close()
+
+		defer func() {
+			if err := file.Close(); err != nil {
+				log.Printf("error closing file %s: %v", filePath, err)
+			}
+		}()
 
 		scanner := bufio.NewScanner(file)
 
@@ -88,7 +94,7 @@ func createVerticesIndex() error {
 			return fmt.Errorf("error saving offsets: %w", err)
 		}
 
-		fmt.Printf("Saved %d Vertices offsets to %s\n", results.Len(), saveFile)
+		log.Printf("Saved %d Vertices offsets to %s\n", results.Len(), saveFile)
 	}
 
 	return nil
@@ -157,7 +163,7 @@ func createBackwardEdgesIndex() error {
 }
 
 func createEdgesIndex(edgesFolder string, outFile string) error {
-	fmt.Printf("Loading  Edges from %s folder\n", edgesFolder)
+	log.Printf("Loading  Edges from %s folder\n", edgesFolder)
 	// entries are sorted by filename
 	entries, err := os.ReadDir(edgesFolder)
 	if err != nil {
@@ -172,13 +178,18 @@ func createEdgesIndex(edgesFolder string, outFile string) error {
 		}
 
 		filePath := filepath.Join(edgesFolder, entry.Name())
-		fmt.Printf("Processing Edges file: %s\n", filePath)
+		log.Printf("Processing Edges file: %s\n", filePath)
 
-		file, err := os.Open(filePath)
+		file, err := os.Open(filePath) //nolint:gosec
 		if err != nil {
 			return fmt.Errorf("error opening file %q: %w", filePath, err)
 		}
-		defer file.Close()
+
+		defer func() {
+			if err := file.Close(); err != nil {
+				log.Printf("error closing file %s: %v", filePath, err)
+			}
+		}()
 
 		scanner := bufio.NewScanner(file)
 
@@ -203,7 +214,7 @@ func createEdgesIndex(edgesFolder string, outFile string) error {
 			return fmt.Errorf("error saving offsets: %w", err)
 		}
 
-		fmt.Printf("Saved %d edges offsets to %s\n", results.Len(), saveFile)
+		log.Printf("Saved %d edges offsets to %s\n", results.Len(), saveFile)
 	}
 
 	return nil

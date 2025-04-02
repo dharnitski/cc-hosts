@@ -13,7 +13,7 @@ import (
 	"github.com/dharnitski/cc-hosts/vertices"
 )
 
-var searcher *search.Searcher
+var searcher *search.Searcher //nolint:gochecknoglobals
 
 type Request struct {
 	Domain string `json:"domain"`

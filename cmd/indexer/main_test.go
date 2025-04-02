@@ -47,7 +47,7 @@ func TestProcessOneVerticesFile_ScannerError(t *testing.T) {
 	data := "domain1\tvalue1\ndomain2\tvalue2\ndomain3\tvalue3\n"
 	scanner := bufio.NewScanner(strings.NewReader(data))
 
-	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	scanner.Split(func(data []byte, atEOF bool) (int, []byte, error) {
 		return 0, nil, errors.New("scanner error")
 	})
 
@@ -66,7 +66,7 @@ func TestProcessOneEdgesFile(t *testing.T) {
 	scanner := bufio.NewScanner(strings.NewReader(buffer.String()))
 	result, err := processOneEdgesFile(scanner, "edges.txt")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Len(t, result, 3)
 
@@ -91,7 +91,7 @@ func TestProcessOneEdgesFile_ScannerError(t *testing.T) {
 	data := "domain1\n"
 	scanner := bufio.NewScanner(strings.NewReader(data))
 
-	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	scanner.Split(func(data []byte, atEOF bool) (int, []byte, error) {
 		return 0, nil, errors.New("scanner error")
 	})
 

@@ -47,7 +47,7 @@ func (g *S3Getter) Get(ctx context.Context, fileName string, offset int, length 
 		Range:  aws.String(rangeStr),
 	}
 
-	result, err := g.client.GetObject(context.TODO(), input)
+	result, err := g.client.GetObject(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get object from S3 bucket %s, key %s : %w", g.bucketName, key, err)
 	}

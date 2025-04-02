@@ -127,11 +127,9 @@ func findEdges(buffer []byte, fromID string) ([]string, error) {
 			if len(results) >= DefaultMaxSize {
 				break
 			}
-		} else {
+		} else if len(results) > 0 {
 			// items sorted and we can break after we reach items with different fromID
-			if len(results) > 0 {
-				break
-			}
+			break
 		}
 	}
 

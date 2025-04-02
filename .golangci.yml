@@ -1,5 +1,15 @@
 version: "2"
+
 linters:
+
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - errcheck
+          - funlen
+          - gosec
+
   enable:
     - asasalint
     - asciicheck
@@ -11,18 +21,15 @@ linters:
     - copyloopvar
     - cyclop
     - decorder
-    - depguard
     - dogsled
     - dupl
     - dupword
     - durationcheck
-    - err113
     - errcheck
     - errchkjson
     - errname
     - errorlint
     - exhaustive
-    - exhaustruct
     - exptostd
     - fatcontext
     - forbidigo
@@ -38,7 +45,6 @@ linters:
     - gocritic
     - gocyclo
     - godot
-    - godox
     - goheader
     - gomoddirectives
     - gomodguard
@@ -54,13 +60,11 @@ linters:
     - interfacebloat
     - intrange
     - ireturn
-    - lll
     - loggercheck
     - maintidx
     - makezero
     - mirror
     - misspell
-    - mnd
     - musttag
     - nakedret
     - nestif
@@ -80,7 +84,6 @@ linters:
     - protogetter
     - reassign
     - recvcheck
-    - revive
     - rowserrcheck
     - sloglint
     - spancheck
@@ -98,9 +101,7 @@ linters:
     - unused
     - usestdlibvars
     - usetesting
-    - varnamelen
     - wastedassign
     - whitespace
-    - wrapcheck
     - wsl
     - zerologlint

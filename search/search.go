@@ -56,7 +56,7 @@ func (s *Searcher) GetTargets(ctx context.Context, domain string) (*Result, erro
 	timings["get_by_domain"] = int(time.Since(start).Milliseconds())
 
 	if vertice == nil {
-		return nil, nil
+		return nil, nil //nolint:nilnil
 	}
 
 	var outs, ins []string

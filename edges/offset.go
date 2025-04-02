@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -83,20 +84,25 @@ func (v *Offsets) Append(offsets []Offset) {
 	v.offsets = append(v.offsets, offsets...)
 }
 
-func (v Offsets) Items() []Offset {
+func (v *Offsets) Items() []Offset {
 	return v.offsets
 }
 
-func (v Offsets) Len() int {
+func (v *Offsets) Len() int {
 	return len(v.offsets)
 }
 
-func (v Offsets) Save(fileName string) error {
-	file, err := os.Create(fileName)
+func (v *Offsets) Save(fileName string) error {
+	file, err := os.Create(fileName) //nolint:gosec
 	if err != nil {
 		return fmt.Errorf("error creating file %q: %w", fileName, err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Printf("error closing file %s: %v", fileName, err)
+		}
+	}()
 
 	for _, offset := range v.offsets {
 		_, err := file.WriteString(offset.String() + "\n")
@@ -111,12 +117,16 @@ func (v Offsets) Save(fileName string) error {
 func (v *Offsets) Load(fileName string) error {
 	v.offsets = make([]Offset, 0)
 
-	file, err := os.Open(fileName)
+	file, err := os.Open(fileName) //nolint:gosec
 	if err != nil {
 		return fmt.Errorf("error opening file %q: %w", fileName, err)
 	}
 
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Printf("error closing file %s: %v", fileName, err)
+		}
+	}()
 
 	return v.loadFromReader(file)
 }
@@ -139,7 +149,7 @@ func (v *Offsets) loadFromReader(reader io.Reader) error {
 	return nil
 }
 
-func (v *Offsets) Validate() error {
+func (v *Offsets) Validate() error { //nolint:cyclop
 	if v.Len() == 0 {
 		return errors.New("no offsets found")
 	}
@@ -173,11 +183,9 @@ func (v *Offsets) Validate() error {
 		}
 		// each file has sorted IDs but files are not sorted itself
 		// each file can store IDs from 0 to max ID
-		if previousFile == offset.file {
+		if previousFile == offset.file && id < previousID {
 			// ids are not unique in edges file, we can have multiple offsets pointing to same ID
-			if id < previousID {
-				return fmt.Errorf("ID goes down: %d, previous %d", id, previousID)
-			}
+			return fmt.Errorf("ID goes down: %d, previous %d", id, previousID)
 		}
 
 		previousID = id

@@ -10,6 +10,8 @@ import (
 )
 
 func getEdges(t *testing.T) *edges.Edges {
+	t.Helper()
+
 	offsets, err := edges.NewOffsets()
 	require.NoError(t, err)
 

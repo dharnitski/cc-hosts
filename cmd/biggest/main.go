@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -24,14 +25,14 @@ func main() {
 
 	err := loadBiggestHosts(edgesFolder, biggestIDs)
 	if err != nil {
-		fmt.Printf("Error loading biggest hosts: %v\n", err)
+		log.Printf("Error loading biggest hosts: %v\n", err)
 
 		return
 	}
 
 	err = convertAndSave(ctx, biggestIDs, "biggest.json")
 	if err != nil {
-		fmt.Printf("Error converting and saving: %v\n", err)
+		log.Printf("Error converting and saving: %v\n", err)
 
 		return
 	}
@@ -41,21 +42,21 @@ func main() {
 
 	err = loadBiggestHosts(edgesFolder, biggestIDs)
 	if err != nil {
-		fmt.Printf("Error loading biggest hosts: %v\n", err)
+		log.Printf("Error loading biggest hosts: %v\n", err)
 
 		return
 	}
 
 	err = convertAndSave(ctx, biggestIDs, "biggest.reversed.json")
 	if err != nil {
-		fmt.Printf("Error converting and saving: %v\n", err)
+		log.Printf("Error converting and saving: %v\n", err)
 
 		return
 	}
 }
 
 func convertAndSave(ctx context.Context, biggestIDs map[string]int, outFile string) error {
-	fmt.Printf("Getting Domains for IDs\n")
+	log.Printf("Getting Domains for IDs\n")
 
 	offsets, err := vertices.NewOffsets()
 	if err != nil {
@@ -69,13 +70,13 @@ func convertAndSave(ctx context.Context, biggestIDs map[string]int, outFile stri
 	for id, counter := range biggestIDs {
 		vertice, err := vertices.GetByID(ctx, id)
 		if err != nil {
-			fmt.Printf("Error getting vertice by ID %s: %v\n", id, err)
+			log.Printf("Error getting vertice by ID %s: %v\n", id, err)
 
 			continue
 		}
 
 		if vertice == nil {
-			fmt.Printf("Vertice %s not found\n", id)
+			log.Printf("Vertice %s not found\n", id)
 
 			continue
 		}
@@ -84,11 +85,16 @@ func convertAndSave(ctx context.Context, biggestIDs map[string]int, outFile stri
 		biggest[domain] = counter
 	}
 
-	file, err := os.Create(outFile)
+	file, err := os.Create(outFile) //nolint:gosec
 	if err != nil {
 		return fmt.Errorf("error creating file: %w", err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Printf("error closing file %s: %v", outFile, err)
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "    ")
@@ -102,7 +108,7 @@ func convertAndSave(ctx context.Context, biggestIDs map[string]int, outFile stri
 }
 
 func loadBiggestHosts(edgesFolder string, biggest map[string]int) error {
-	fmt.Printf("Loading  Edges from %s folder\n", edgesFolder)
+	log.Printf("Loading  Edges from %s folder\n", edgesFolder)
 
 	entries, err := os.ReadDir(edgesFolder)
 	if err != nil {
@@ -115,13 +121,18 @@ func loadBiggestHosts(edgesFolder string, biggest map[string]int) error {
 		}
 
 		filePath := filepath.Join(edgesFolder, entry.Name())
-		fmt.Printf("Processing Edges file: %s\n", filePath)
+		log.Printf("Processing Edges file: %s\n", filePath)
 
-		file, err := os.Open(filePath)
+		file, err := os.Open(filePath) //nolint:gosec
 		if err != nil {
 			return fmt.Errorf("error opening file %q: %w", filePath, err)
 		}
-		defer file.Close()
+
+		defer func() {
+			if err := file.Close(); err != nil {
+				log.Printf("error closing file %s: %v", filePath, err)
+			}
+		}()
 
 		scanner := bufio.NewScanner(file)
 
@@ -160,7 +171,7 @@ func processOneEdgesFile(scanner *bufio.Scanner, biggest map[string]int) error {
 		// data for next Vertice
 		if edge.FromID() != id {
 			if counter > savingTrashload {
-				biggest[id] = biggest[id] + counter
+				biggest[id] += counter
 			}
 
 			counter = 0

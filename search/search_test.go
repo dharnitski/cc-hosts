@@ -2,7 +2,7 @@ package search_test
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"os"
 	"path"
 	"testing"
@@ -79,12 +79,11 @@ func TestSearcher_Missed(t *testing.T) {
 	out := []search.Result{}
 
 	for _, input := range inputs {
-		fmt.Printf("input: %s\n", input)
 		results, err := searcher.GetTargets(t.Context(), input)
-		assert.NoError(t, err)
+		assert.NoError(t, err) //nolint:testifylint
 
 		if results == nil {
-			fmt.Printf("no results for %s\n", input)
+			log.Printf("no results for %s\n", input)
 
 			continue
 		}

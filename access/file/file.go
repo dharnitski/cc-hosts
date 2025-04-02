@@ -19,9 +19,9 @@ func NewGetter(folder string) *Getter {
 func (f *Getter) Get(ctx context.Context, fileName string, offset int, length int) ([]byte, error) {
 	fullName := filepath.Join(f.folder, fileName)
 
-	file, err := os.OpenFile(fullName, os.O_RDONLY, 0o644)
+	file, err := os.OpenFile(fullName, os.O_RDONLY, 0o644) //nolint:gosec
 	if err != nil {
-		return nil, fmt.Errorf("Failed to open file: %w", err)
+		return nil, fmt.Errorf("failed to open file: %w", err)
 	}
 
 	defer func() {

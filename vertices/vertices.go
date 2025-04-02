@@ -139,7 +139,7 @@ func (v *Vertices) GetByIDs(ctx context.Context, ids []string) ([]Vertice, error
 	}
 
 	if len(errs) > 0 {
-		return results, fmt.Errorf("Errors: %v", errs)
+		return results, fmt.Errorf("errors: %v", errs)
 	}
 
 	return results, nil
@@ -201,5 +201,5 @@ func findVertice(buffer []byte, key string, searchSwitch searchKey) (*Vertice, e
 		return nil, fmt.Errorf("error reading file for key %s: %w", key, err)
 	}
 
-	return nil, nil
+	return nil, nil //nolint:nilnil
 }

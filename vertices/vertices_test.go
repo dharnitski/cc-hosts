@@ -10,6 +10,8 @@ import (
 )
 
 func getVertices(t *testing.T) *vertices.Vertices {
+	t.Helper()
+
 	offsets, err := vertices.NewOffsets()
 	require.NoError(t, err)
 
