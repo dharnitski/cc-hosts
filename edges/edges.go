@@ -15,7 +15,7 @@ import (
 const (
 	EdgesFolder         = "edges"
 	EdgesReversedFolder = "edges_reversed"
-	DefaultMaxSize      = 10_000
+	DefaultMaxSize      = 5_000
 )
 
 type Edge struct {
@@ -92,6 +92,9 @@ func (v *Edges) Get(ctx context.Context, fromID string) ([]string, error) {
 			return nil, res.err
 		}
 		allEdges = append(allEdges, res.edges...)
+		if len(allEdges) >= DefaultMaxSize {
+			allEdges = allEdges[:DefaultMaxSize]
+		}
 	}
 
 	sort.Strings(allEdges)

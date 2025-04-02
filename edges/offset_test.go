@@ -171,14 +171,12 @@ func TestOffsetsFindForFromID(t *testing.T) {
 		{id: "0", from: 0, to: 0},
 		// 74 is not of file
 		{id: "74", from: 0, to: 0},
-		// first line
-		{id: "75", from: 0, to: 1048590},
-		{id: "96032", from: 0, to: 1048590},
-		// second line
-		{id: "96033", from: 0, to: 2097167},
-		{id: "96034", from: 1048590, to: 2097167},
+		{id: "75", from: 0, to: 131079},
+		{id: "96032", from: 917552, to: 1048637},
+		{id: "96033", from: 917552, to: 1048637},
+		{id: "96034", from: 917552, to: 1048637},
 		// last line
-		{id: "283704001", from: 3688922830, to: 3689816010},
+		{id: "283704001", from: 3689801286, to: 3689816010},
 	}
 	for _, tt := range tests {
 		t.Run(tt.id, func(t *testing.T) {

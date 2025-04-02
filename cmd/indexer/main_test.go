@@ -13,7 +13,7 @@ import (
 func TestProcessOneVerticesFile(t *testing.T) {
 	t.Parallel()
 	buffer := strings.Builder{}
-	for i := 0; i < 50000; i++ {
+	for i := 0; i < 2000; i++ {
 		buffer.WriteString(fmt.Sprintf("%d\t%d.example.com\n", i, i))
 	}
 	fileLength := buffer.Len()
@@ -23,8 +23,8 @@ func TestProcessOneVerticesFile(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, result, 3)
 	assert.Equal(t, "0.example.com\t0\t0\tvertices.txt", result[0].String())
-	assert.Equal(t, "44617.example.com\t1048588\t44617\tvertices.txt", result[1].String())
-	assert.Equal(t, "49999.example.com\t1177780\t49999\tvertices.txt", result[2].String())
+	assert.Equal(t, "1591.example.com\t32782\t1591\tvertices.txt", result[1].String())
+	assert.Equal(t, "1999.example.com\t41780\t1999\tvertices.txt", result[2].String())
 	assert.Equal(t, fileLength, result[2].Offset())
 }
 
@@ -53,7 +53,7 @@ func TestProcessOneVerticesFile_ScannerError(t *testing.T) {
 func TestProcessOneEdgesFile(t *testing.T) {
 	t.Parallel()
 	buffer := strings.Builder{}
-	for i := 0; i < 100000; i++ {
+	for i := 0; i < 20000; i++ {
 		buffer.WriteString(fmt.Sprintf("%d\t%d\n", i, i))
 	}
 	scanner := bufio.NewScanner(strings.NewReader(buffer.String()))
@@ -64,8 +64,8 @@ func TestProcessOneEdgesFile(t *testing.T) {
 	assert.Equal(t, 3, len(result))
 
 	assert.Equal(t, "0\t0\tedges.txt", result[0].String())
-	assert.Equal(t, "89233\t1048576\tedges.txt", result[1].String())
-	assert.Equal(t, "99999\t1177780\tedges.txt", result[2].String())
+	assert.Equal(t, "12775\t131080\tedges.txt", result[1].String())
+	assert.Equal(t, "19999\t217780\tedges.txt", result[2].String())
 }
 
 func TestProcessOneEdgesFile_InvalidLine(t *testing.T) {

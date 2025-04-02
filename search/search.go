@@ -4,10 +4,18 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/dharnitski/cc-hosts/vertices"
+)
+
+type direction string
+
+const (
+	in  direction = "in"
+	out direction = "out"
 )
 
 type Searcher struct {
@@ -44,22 +52,41 @@ func (s *Searcher) GetTargets(ctx context.Context, domain string) (*Result, erro
 	if vertice == nil {
 		return nil, nil
 	}
-	start = time.Now()
-	outs, err := s.getDomains(ctx, vertice.ID(), s.out, timings, "out")
-	if err != nil {
-		return nil, err
+	var outs, ins []string
+	var outErr, inErr error
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		outs, outErr = s.getDomains(ctx, vertice.ID(), timings, out)
+	}()
+
+	go func() {
+		defer wg.Done()
+		ins, inErr = s.getDomains(ctx, vertice.ID(), timings, in)
+	}()
+	wg.Wait()
+
+	if outErr != nil {
+		return nil, outErr
 	}
-	timings["out_domains"] = int(time.Since(start).Milliseconds())
-	start = time.Now()
-	ins, err := s.getDomains(ctx, vertice.ID(), s.in, timings, "in")
-	if err != nil {
-		return nil, err
+	if inErr != nil {
+		return nil, inErr
 	}
-	timings["in_domains"] = int(time.Since(start).Milliseconds())
 	return &Result{Target: domain, Out: outs, In: ins, Timings: timings}, nil
 }
 
-func (s *Searcher) getDomains(ctx context.Context, verticeID string, edges *edges.Edges, timings map[string]int, pref string) ([]string, error) {
+func (s *Searcher) getDomains(ctx context.Context, verticeID string, timings map[string]int, pref direction) ([]string, error) {
+	allStart := time.Now()
+	var edges *edges.Edges
+	switch pref {
+	case out:
+		edges = s.out
+	case in:
+		edges = s.in
+	}
+
 	start := time.Now()
 	outIDs, err := edges.Get(ctx, verticeID)
 	if err != nil {
@@ -77,5 +104,6 @@ func (s *Searcher) getDomains(ctx context.Context, verticeID string, edges *edge
 		results = append(results, vertices.ReverseDomain(d.Domain()))
 	}
 	sort.Strings(results)
+	timings[fmt.Sprintf("%s_domains", pref)] = int(time.Since(allStart).Milliseconds())
 	return results, nil
 }
