@@ -138,7 +138,7 @@ Edges are stored as two Vertice ID values delimited by tab.
 First Vertice identifies host that contains the link.
 Second Vertice is host pointed by that link.
 Edges are sorted by first Vertice ID using int (not string) comparison logic.
-Each file is not continuation of index. Instead. Each file contains subset of all Vertices. 
+Each file is not continuation of index. Instead, each file contains subset of all Vertices. Therefore we need to get check all files to load all results.
 
 
 ```csv
