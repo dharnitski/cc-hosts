@@ -1,36 +1,100 @@
-# Data folder contain Common Crawl Hosts Web Graph
+# Data folder containing Common Crawl Hosts Web Graph
 
-## How to get the data
 
-Login into into AWS and navigate to s3://commoncrawl/projects/hyperlinkgraph/ folder. Find snapshot you want to use. In my case it is s3://commoncrawl/projects/hyperlinkgraph/cc-main-2024-oct-nov-dec/. Note: the latest data may be not in the latest folder because name includes month name instead of month number.
+Data is collected by commoncrawl.org and hosted in public `commoncrawl` s3 bucket.
+Anonymous access is disabled to that bucket, but any authenticated user can download data.
 
-Download and uncompress `.txt.gz` files from S3 `s3://commoncrawl/projects/hyperlinkgraph/cc-main-XXX/host/vertices/` folder into  `data/vertices`. 
+Check this link for more details - https://commoncrawl.org/get-started
 
-Download and uncompress `.txt.gz` files from S3 `s3://commoncrawl/projects/hyperlinkgraph/cc-main-XXX/host/edges/` folder into  `data/edges`.
+## Download Common Crawl files
 
-Finals result
+### Find latests data identifier
+
+Common Crawls constantly scrabs internet and regularly publishes datasets with collected data.
+For Web Graphs that currently happens every 3 month. 
+
+We need to find the latest dataset to use. Go to https://commoncrawl.org/web-graphs and pick it in that page. You will be redirected to page that contains downloads for that dayaset.
+In my case it is https://data.commoncrawl.org/projects/hyperlinkgraph/cc-main-2025-feb-mar-apr/index.html.  `cc-main-2025-feb-mar-apr` is what we need. That is dataset identifier. It is combined dataset containing data from Febriary, March and April of 2025. That page also has direct links to download data data in  [BVGraph](https://webgraph.di.unimi.it/docs/it/unimi/dsi/webgraph/BVGraph.html) format. 
+
+Unfortunately, data we need is not published on that page but it can be downloaded from S3.    
+
+For now, all we need is an identifier `cc-main-2025-feb-mar-apr`. We will use it to create S3 path to load data. 
+
+### Download data
+
+Hosts Web Graph data stored in S3 folder `s3://commoncrawl/projects/hyperlinkgraph/<Release ID>/host`.
+
+Commands to download edges and vertices:
+
+```bash
+aws s3 cp s3://commoncrawl/projects/hyperlinkgraph/<Release ID>/host/edges/ data/edges --recursive
+
+aws s3 cp s3://commoncrawl/projects/hyperlinkgraph/<Release ID>/host/vertices/ data/vertices --recursive
+```
+
+For release `cc-main-2025-feb-mar-apr` they looks like this:
+
+```bash
+aws s3 cp s3://commoncrawl/projects/hyperlinkgraph/cc-main-2025-jan-feb-mar/host/edges/ data/edges --recursive
+
+aws s3 cp s3://commoncrawl/projects/hyperlinkgraph/cc-main-2025-jan-feb-mar/host/vertices/ data/vertices --recursive
+```
+
+These commands downloads about 14 GB for edges and 3 GB for vertices of `.txt.gz` files. 
+
+
+## Extract files from archives
+
+`gz` saves lots of space but we cannot use it directly. That format does not allow reading data by index.
+
+```bash
+find data -type f -name "*.txt.gz" -exec gunzip {} \;
+```
+
+Now we have about 55 GB for edges and 10 GB for vertices of `.txt` files.
+
+## Finals result
 
 ```
-./data/vertices
-./data/vertices/part-00004-4ba7987d-67a0-4f7d-b410-1d92df440699-c000.txt
-./data/vertices/part-00005-4ba7987d-67a0-4f7d-b410-1d92df440699-c000.txt
-./data/vertices/part-00000-4ba7987d-67a0-4f7d-b410-1d92df440699-c000.txt
-./data/vertices/part-00001-4ba7987d-67a0-4f7d-b410-1d92df440699-c000.txt
-./data/vertices/part-00002-4ba7987d-67a0-4f7d-b410-1d92df440699-c000.txt
-./data/vertices/part-00003-4ba7987d-67a0-4f7d-b410-1d92df440699-c000.txt
-./data/edges
-./data/edges/part-00011-02106921-c60f-49b6-912c-b03ea5690455-c000.txt
-./data/edges/part-00006-02106921-c60f-49b6-912c-b03ea5690455-c000.txt
-./data/edges/part-00010-02106921-c60f-49b6-912c-b03ea5690455-c000.txt
-./data/edges/part-00007-02106921-c60f-49b6-912c-b03ea5690455-c000.txt
-./data/edges/part-00008-02106921-c60f-49b6-912c-b03ea5690455-c000.txt
-./data/edges/part-00004-02106921-c60f-49b6-912c-b03ea5690455-c000.txt
-./data/edges/part-00009-02106921-c60f-49b6-912c-b03ea5690455-c000.txt
-./data/edges/part-00005-02106921-c60f-49b6-912c-b03ea5690455-c000.txt
-./data/edges/part-00002-02106921-c60f-49b6-912c-b03ea5690455-c000.txt
-./data/edges/part-00003-02106921-c60f-49b6-912c-b03ea5690455-c000.txt
-./data/edges/part-00000-02106921-c60f-49b6-912c-b03ea5690455-c000.txt
-./data/edges/part-00001-02106921-c60f-49b6-912c-b03ea5690455-c000.txt
+./data/edges:
+part-00000-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00001-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00002-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00003-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00004-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00005-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00006-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00007-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00008-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00009-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00010-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00011-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00012-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00013-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00014-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00015-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00016-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00017-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00018-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00019-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00020-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00021-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00022-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00023-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+
+./data/vertices:
+part-00000-b2128a57-30c4-4114-9ac0-344b81f88dfe-c000.txt
+part-00001-b2128a57-30c4-4114-9ac0-344b81f88dfe-c000.txt
+part-00002-b2128a57-30c4-4114-9ac0-344b81f88dfe-c000.txt
+part-00003-b2128a57-30c4-4114-9ac0-344b81f88dfe-c000.txt
+part-00004-b2128a57-30c4-4114-9ac0-344b81f88dfe-c000.txt
+part-00005-b2128a57-30c4-4114-9ac0-344b81f88dfe-c000.txt
+part-00006-b2128a57-30c4-4114-9ac0-344b81f88dfe-c000.txt
+part-00007-b2128a57-30c4-4114-9ac0-344b81f88dfe-c000.txt
+part-00008-b2128a57-30c4-4114-9ac0-344b81f88dfe-c000.txt
+part-00009-b2128a57-30c4-4114-9ac0-344b81f88dfe-c000.txt
+part-00010-b2128a57-30c4-4114-9ac0-344b81f88dfe-c000.txt
+part-00011-b2128a57-30c4-4114-9ac0-344b81f88dfe-c000.txt
 ```
 
 Files structure
@@ -77,7 +141,7 @@ Edges are sorted by first Vertice ID using int (not string) comparison logic.
 Each file is not continuation of index. Instead. Each file contains subset of all Vertices. 
 
 
-```
+```csv
 75	63216723
 75	229821733
 77	47814421
@@ -106,22 +170,29 @@ Each file is not continuation of index. Instead. Each file contains subset of al
 
 ## Create Reversed 
 
-Reverse Vertices in Edges file and save into `data/edges_reversed` folder.
+Edges store links sorted by site name. Using that sort order we can efficiently (without scanning all files) find all links from particular site to others.
 
-```
-$python reverse.py  
+Having all links in one database we can get not only link *from* our site, but also links from other sites *to* our site. Unfortunately, with one set of files we cannot do that without scanning all the files.
+
+We can solve that problem by creating other files where data is stored and sorted in reversed order. In these new edge files we want host be first and second is site that has link pointing to host.
+
+
+We can use small Python script to reverse Edges fils and save results into `data/edges_reversed` folder:
+
+```bash
+cd data && python3 reverse.py 
 ```
 
 Data is not sorted after Vertices are reversed.
-Run script to sort files. Sorting can take several hours.
+Run script to sort files. **Sorting can take several hours**.
 
 ```
 $./sort.sh  
-``
+```
 
 Sorted Reversed Edges data 
 
-```
+```csv
 17	90104917
 34	124288668
 34	256919968
@@ -143,5 +214,3 @@ Sorted Reversed Edges data
 73	256919968
 ```
 
-
-## Scripts
