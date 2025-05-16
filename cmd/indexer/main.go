@@ -14,18 +14,15 @@ import (
 	"github.com/dharnitski/cc-hosts/vertices"
 )
 
-const (
-	dataFolder = "data"
-)
-
-//nolint:gochecknoglobals
 var (
-	edgesForwardFolder  = path.Join(dataFolder, edges.EdgesFolder)
-	edgesReversedFolder = path.Join(dataFolder, edges.EdgesReversedFolder)
-	verticesFolder      = path.Join(dataFolder, vertices.Folder)
+	dataFolder          string
+	edgesForwardFolder  string
+	edgesReversedFolder string
+	verticesFolder      string
 )
 
 func main() {
+	setVars()
 	err := createVerticesIndex()
 	if err != nil {
 		log.Fatal("Vertices Error: ", err)
@@ -40,6 +37,19 @@ func main() {
 	if err != nil {
 		log.Fatal("Edges Backward Error: ", err)
 	}
+}
+
+func setVars() {
+	// default folder for data
+	dataFolder = "data"
+	args := os.Args
+	if len(args) > 1 {
+		dataFolder = args[1]
+	}
+
+	edgesForwardFolder = path.Join(dataFolder, edges.EdgesFolder)
+	edgesReversedFolder = path.Join(dataFolder, edges.EdgesReversedFolder)
+	verticesFolder = path.Join(dataFolder, vertices.Folder)
 }
 
 func createVerticesIndex() error {
@@ -87,7 +97,7 @@ func createVerticesIndex() error {
 			return fmt.Errorf("error validating offsets: %w", err)
 		}
 
-		saveFile := fmt.Sprintf("%s/%s", offsets.Folder, offsets.VerticesOffsetsFile)
+		saveFile := path.Join(dataFolder, offsets.VerticesOffsetsFile)
 
 		err = results.Save(saveFile)
 		if err != nil {
@@ -117,7 +127,6 @@ func processOneVerticesFile(scanner *bufio.Scanner, fileName string) ([]vertices
 
 		line := string(bytes)
 		vertice, err := vertices.LoadVertice(line)
-
 		if err != nil {
 			return nil, fmt.Errorf("invalid line: %q: %w", line, err)
 		}
@@ -125,7 +134,6 @@ func processOneVerticesFile(scanner *bufio.Scanner, fileName string) ([]vertices
 		domain = vertice.Domain()
 		sid := vertice.ID()
 		id, err = strconv.Atoi(sid)
-
 		if err != nil {
 			return nil, fmt.Errorf("invalid ID: %q: %w", sid, err)
 		}
@@ -207,7 +215,7 @@ func createEdgesIndex(edgesFolder string, outFile string) error {
 			return fmt.Errorf("error validating offsets: %w", err)
 		}
 
-		saveFile := fmt.Sprintf("%s/%s", offsets.Folder, outFile)
+		saveFile := path.Join(dataFolder, outFile)
 
 		err = results.Save(saveFile)
 		if err != nil {
@@ -236,7 +244,6 @@ func processOneEdgesFile(scanner *bufio.Scanner, fileName string) ([]edges.Offse
 
 		line := string(bytes)
 		edge, err := edges.LoadEdge(line)
-
 		if err != nil {
 			return nil, fmt.Errorf("invalid line: %q: %w", line, err)
 		}
