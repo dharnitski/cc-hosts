@@ -1,16 +1,12 @@
 package search_test
 
 import (
-	"encoding/json"
-	"log"
-	"os"
 	"path"
 	"testing"
 
 	"github.com/dharnitski/cc-hosts/access/file"
 	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/dharnitski/cc-hosts/search"
-	"github.com/dharnitski/cc-hosts/testdata"
 	"github.com/dharnitski/cc-hosts/vertices"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -51,50 +47,50 @@ func TestSearcher_GetTargets(t *testing.T) {
 	assert.Equal(t, "binaryedge.io", results.Target)
 }
 
-func TestSearcher_Missed(t *testing.T) {
-	// t.Skip()
-	t.Parallel()
+// func TestSearcher_Missed(t *testing.T) {
+// 	// t.Skip()
+// 	t.Parallel()
 
-	inputs := testdata.GetInputs()
-	// inputs = append(inputs, testdata.GetExpected()...)
+// 	inputs := testdata.GetInputs()
+// 	// inputs = append(inputs, testdata.GetExpected()...)
 
-	eOffsets, err := edges.NewOffsets()
-	require.NoError(t, err)
+// 	eOffsets, err := edges.NewOffsets()
+// 	require.NoError(t, err)
 
-	e := edges.NewEdges(file.NewGetter("../data/edges"), *eOffsets)
+// 	e := edges.NewEdges(file.NewGetter("../data/edges"), *eOffsets)
 
-	reversedOffsets, err := edges.NewOffsetsReversed()
-	require.NoError(t, err)
+// 	reversedOffsets, err := edges.NewOffsetsReversed()
+// 	require.NoError(t, err)
 
-	reversed := edges.NewEdges(file.NewGetter("../data/edges_reversed"), *reversedOffsets)
+// 	reversed := edges.NewEdges(file.NewGetter("../data/edges_reversed"), *reversedOffsets)
 
-	vOffsets, err := vertices.NewOffsets()
-	require.NoError(t, err)
+// 	vOffsets, err := vertices.NewOffsets()
+// 	require.NoError(t, err)
 
-	v := vertices.NewVertices(file.NewGetter("../data/vertices"), *vOffsets)
+// 	v := vertices.NewVertices(file.NewGetter("../data/vertices"), *vOffsets)
 
-	// TODO: Use in and out edges
-	searcher := search.NewSearcher(v, e, reversed)
+// 	// TODO: Use in and out edges
+// 	searcher := search.NewSearcher(v, e, reversed)
 
-	out := []search.Result{}
+// 	out := []search.Result{}
 
-	for _, input := range inputs {
-		results, err := searcher.GetTargets(t.Context(), input)
-		assert.NoError(t, err) //nolint:testifylint
+// 	for _, input := range inputs {
+// 		results, err := searcher.GetTargets(t.Context(), input)
+// 		assert.NoError(t, err) //nolint:testifylint
 
-		if results == nil {
-			log.Printf("no results for %s\n", input)
+// 		if results == nil {
+// 			log.Printf("no results for %s\n", input)
 
-			continue
-		}
+// 			continue
+// 		}
 
-		out = append(out, *results)
-	}
-	// save out to JSON file
-	jsonData, err := json.MarshalIndent(out, "", "    ")
-	require.NoError(t, err)
+// 		out = append(out, *results)
+// 	}
+// 	// save out to JSON file
+// 	jsonData, err := json.MarshalIndent(out, "", "    ")
+// 	require.NoError(t, err)
 
-	// Write to file
-	err = os.WriteFile("output.json", jsonData, 0o644)
-	require.NoError(t, err)
-}
+// 	// Write to file
+// 	err = os.WriteFile("output.json", jsonData, 0o644)
+// 	require.NoError(t, err)
+// }

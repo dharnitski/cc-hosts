@@ -17,7 +17,7 @@ const (
 	Folder      = "vertices"
 )
 
-type Vertice struct {
+type Vertex struct {
 	// vertice id
 	id string
 	// domain name in reverse domain format
@@ -25,13 +25,13 @@ type Vertice struct {
 	domain string
 }
 
-func (v *Vertice) ID() string {
+func (v *Vertex) ID() string {
 	return v.id
 }
 
 // internal reversed domain format
 // sample: com.example
-func (v *Vertice) Domain() string {
+func (v *Vertex) Domain() string {
 	return v.domain
 }
 
@@ -46,17 +46,17 @@ func ReverseDomain(domain string) string {
 
 // ReversedDomain returns the domain as we use it in browser
 // sample: example.com
-func (v *Vertice) ReversedDomain() string {
+func (v *Vertex) ReversedDomain() string {
 	return ReverseDomain(v.domain)
 }
 
-func LoadVertice(line string) (*Vertice, error) {
+func LoadVertice(line string) (*Vertex, error) {
 	parts := strings.Split(line, "\t")
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("invalid line: %s, %d parts", line, len(parts))
 	}
 
-	return &Vertice{id: parts[0], domain: parts[1]}, nil
+	return &Vertex{id: parts[0], domain: parts[1]}, nil
 }
 
 type Vertices struct {
@@ -79,17 +79,17 @@ const (
 	searchKeyID     searchKey = "id"
 )
 
-func (v *Vertices) GetByDomain(ctx context.Context, domain string) (*Vertice, error) {
+func (v *Vertices) GetByDomain(ctx context.Context, domain string) (*Vertex, error) {
 	return v.get(ctx, domain, searchKeyDomain)
 }
 
-func (v *Vertices) GetByID(ctx context.Context, id string) (*Vertice, error) {
+func (v *Vertices) GetByID(ctx context.Context, id string) (*Vertex, error) {
 	return v.get(ctx, id, searchKeyID)
 }
 
-func (v *Vertices) GetByIDs(ctx context.Context, ids []string) ([]Vertice, error) {
+func (v *Vertices) GetByIDs(ctx context.Context, ids []string) ([]Vertex, error) {
 	type result struct {
-		vertice *Vertice
+		vertice *Vertex
 		err     error
 		index   int
 	}
@@ -125,7 +125,7 @@ func (v *Vertices) GetByIDs(ctx context.Context, ids []string) ([]Vertice, error
 	}()
 
 	// Prepare results in order
-	results := []Vertice{}
+	results := []Vertex{}
 	errs := []error{}
 
 	for res := range resultChan {
@@ -145,7 +145,7 @@ func (v *Vertices) GetByIDs(ctx context.Context, ids []string) ([]Vertice, error
 	return results, nil
 }
 
-func (v *Vertices) get(ctx context.Context, key string, searchSwitch searchKey) (*Vertice, error) {
+func (v *Vertices) get(ctx context.Context, key string, searchSwitch searchKey) (*Vertex, error) {
 	var from, to Offset
 
 	switch searchSwitch {
@@ -159,10 +159,10 @@ func (v *Vertices) get(ctx context.Context, key string, searchSwitch searchKey) 
 
 		from, to = v.offsets.FindForID(id)
 	}
-	// if we lucky and Vertice is in offset
+	// if we lucky and Vertex is in offset
 	if from.domain == to.domain &&
 		from.id == to.id && from.offset == to.offset {
-		return &Vertice{id: strconv.Itoa(from.id), domain: from.domain}, nil
+		return &Vertex{id: strconv.Itoa(from.id), domain: from.domain}, nil
 	}
 
 	buffer, err := v.getter.Get(ctx, from.file, from.offset, to.offset-from.offset)
@@ -173,7 +173,7 @@ func (v *Vertices) get(ctx context.Context, key string, searchSwitch searchKey) 
 	return findVertice(buffer, key, searchSwitch)
 }
 
-func findVertice(buffer []byte, key string, searchSwitch searchKey) (*Vertice, error) {
+func findVertice(buffer []byte, key string, searchSwitch searchKey) (*Vertex, error) {
 	reader := bytes.NewReader(buffer)
 
 	scanner := bufio.NewScanner(reader)

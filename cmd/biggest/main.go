@@ -76,7 +76,7 @@ func convertAndSave(ctx context.Context, biggestIDs map[string]int, outFile stri
 		}
 
 		if vertice == nil {
-			log.Printf("Vertice %s not found\n", id)
+			log.Printf("Vertex %s not found\n", id)
 
 			continue
 		}

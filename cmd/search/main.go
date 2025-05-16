@@ -1,10 +1,5 @@
 package main
 
-
 func main() {
 
-		
 }
-
-
-

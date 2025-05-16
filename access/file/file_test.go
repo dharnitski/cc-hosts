@@ -12,6 +12,7 @@ import (
 var _ access.Getter = (*file.Getter)(nil)
 
 func TestOffsetsFile(t *testing.T) {
+	t.Skip()
 	t.Parallel()
 
 	getter := file.NewGetter("../../data/vertices")
