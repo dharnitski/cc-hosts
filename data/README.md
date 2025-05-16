@@ -192,7 +192,37 @@ Run script to sort files. **Sorting can take several hours**.
 $./sort.sh  
 ```
 
-Sorted Reversed Edges data 
+Now we have about 55 GB of reversed edges in `.txt` files.
+
+```
+./data/edges_reversed:
+part-00000-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00001-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00002-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00003-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00004-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00005-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00006-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00007-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00008-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00009-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00010-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00011-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00012-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00013-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00014-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00015-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00016-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00017-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00018-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00019-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00020-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00021-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00022-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+part-00023-6318a1c8-2100-4c30-9650-71839e048ef2-c000.txt
+```
+
+This is sample data from Sorted Reversed Edges file 
 
 ```csv
 17	90104917
@@ -214,5 +244,14 @@ Sorted Reversed Edges data
 71	40219391
 71	66062753
 73	256919968
+```
+
+## Pushing files to S3
+
+This commandline uploads all files to S3 bucket `common-crawl-hosts` using AWS credentials from profile `commoncrawler`. These credentials need to get write access to bucket.
+
+
+```bash
+aws s3 cp data  s3://common-crawl-hosts/ --recursive --exclude "*" --include "*.txt" --profile commoncrawler
 ```
 
