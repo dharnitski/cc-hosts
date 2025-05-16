@@ -47,11 +47,13 @@ These commands downloads about 14 GB for edges and 3 GB for vertices of `.txt.gz
 
 `gz` saves lots of space but we cannot use it directly. That format does not allow reading data by index.
 
+Use this command to extract data:
+
 ```bash
 find data -type f -name "*.txt.gz" -exec gunzip {} \;
 ```
 
-Now we have about 55 GB for edges and 10 GB for vertices of `.txt` files.
+Now we have about 55 GB for edges and 10 GB for vertices in `.txt` files.
 
 ## Finals result
 
