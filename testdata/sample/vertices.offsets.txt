@@ -1,0 +1,2 @@
+com.in	0	0	1.txt
+com.target	32	2	1.txt
