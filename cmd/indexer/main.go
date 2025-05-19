@@ -129,7 +129,7 @@ func processOneVerticesFile(scanner *bufio.Scanner, fileName string) ([]vertices
 		tokenLength := len(bytes) + 1
 
 		line := string(bytes)
-		vertex, err := vertices.LoadVertice(line)
+		vertex, err := vertices.LoadVertex(line)
 
 		if err != nil {
 			return nil, fmt.Errorf("invalid line: %q: %w", line, err)

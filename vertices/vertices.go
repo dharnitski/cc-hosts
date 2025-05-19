@@ -50,7 +50,7 @@ func (v *Vertex) ReversedDomain() string {
 	return ReverseDomain(v.domain)
 }
 
-func LoadVertice(line string) (*Vertex, error) {
+func LoadVertex(line string) (*Vertex, error) {
 	parts := strings.Split(line, "\t")
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("invalid line: %s, %d parts", line, len(parts))
@@ -170,17 +170,17 @@ func (v *Vertices) get(ctx context.Context, key string, searchSwitch searchKey) 
 		return nil, err
 	}
 
-	return findVertice(buffer, key, searchSwitch)
+	return findVertex(buffer, key, searchSwitch)
 }
 
-func findVertice(buffer []byte, key string, searchSwitch searchKey) (*Vertex, error) {
+func findVertex(buffer []byte, key string, searchSwitch searchKey) (*Vertex, error) {
 	reader := bytes.NewReader(buffer)
 
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		vertex, err := LoadVertice(line)
+		vertex, err := LoadVertex(line)
 		if err != nil {
 			return nil, err
 		}

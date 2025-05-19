@@ -19,6 +19,7 @@ type Request struct {
 	Domain string `json:"domain"`
 }
 
+// handler for basic lambda function.
 func HandleRequest(ctx context.Context, event *Request) (*search.Result, error) {
 	if event == nil {
 		return &search.Result{}, nil
@@ -27,6 +28,7 @@ func HandleRequest(ctx context.Context, event *Request) (*search.Result, error) 
 	return searcher.GetTargets(ctx, event.Domain)
 }
 
+// handler for API Gateway proxy for lambda function.
 func HandleGateway(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	domain, ok := request.PathParameters["domain"]
 	if !ok {
