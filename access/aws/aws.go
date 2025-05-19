@@ -43,15 +43,14 @@ func (g *S3Getter) Get(ctx context.Context, fileName string, offset int, length 
 		return nil, errors.New("length must be positive")
 	}
 
-	rangeStr := fmt.Sprintf("bytes=%d-%d", offset, offset+length-1)
-	if offset == 0 && length == 0 {
-		rangeStr = ""
-	}
-
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(g.bucketName),
 		Key:    aws.String(key),
-		Range:  aws.String(rangeStr),
+	}
+
+	if length > 0 {
+		rangeStr := fmt.Sprintf("bytes=%d-%d", offset, offset+length-1)
+		input.Range = aws.String(rangeStr)
 	}
 
 	result, err := g.client.GetObject(ctx, input)
@@ -69,9 +68,7 @@ func (g *S3Getter) Get(ctx context.Context, fileName string, offset int, length 
 		return nil, fmt.Errorf("unexpected content length for key %s: %d, expected: %d", key, aws.ToInt64(result.ContentLength), int64(length))
 	}
 
-	buf := make([]byte, length)
-
-	_, err = io.ReadFull(result.Body, buf)
+	buf, err := io.ReadAll(result.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
