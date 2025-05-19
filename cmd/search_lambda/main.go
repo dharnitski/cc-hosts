@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -66,11 +67,14 @@ func createSearcher(ctx context.Context) (*search.Searcher, error) {
 	if err != nil {
 		return nil, err
 	}
+	// short timeout to load offsets
+	createCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 
 	// folder is empty - expect offset files in the root of the bucket
 	offsetsGetter := aws.New(cfg, aws.Bucket, "")
 
-	eOffsets, err := edges.NewOffsets(ctx, offsetsGetter)
+	eOffsets, err := edges.NewOffsets(createCtx, offsetsGetter)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +82,7 @@ func createSearcher(ctx context.Context) (*search.Searcher, error) {
 	edgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesFolder)
 	out := edges.NewEdges(edgesGetter, *eOffsets)
 
-	reversedOffsets, err := edges.NewOffsetsReversed(ctx, offsetsGetter)
+	reversedOffsets, err := edges.NewOffsetsReversed(createCtx, offsetsGetter)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +90,7 @@ func createSearcher(ctx context.Context) (*search.Searcher, error) {
 	revEdgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesReversedFolder)
 	in := edges.NewEdges(revEdgesGetter, *reversedOffsets)
 
-	vOffsets, err := vertices.NewOffsets(ctx, offsetsGetter)
+	vOffsets, err := vertices.NewOffsets(createCtx, offsetsGetter)
 	if err != nil {
 		return nil, err
 	}
