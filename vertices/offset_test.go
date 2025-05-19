@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/dharnitski/cc-hosts/access/file"
 	"github.com/dharnitski/cc-hosts/vertices"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -171,25 +172,56 @@ func TestOffsets_Validate(t *testing.T) {
 func TestOffsetsFindForDomain(t *testing.T) {
 	t.Parallel()
 
-	results, err := vertices.NewOffsets()
+	results, err := vertices.NewOffsets(t.Context(), file.NewGetter("../testdata/sample"))
 	require.NoError(t, err)
 
-	tests := []string{
-		"aaa.11111",
-		"ae.regards",
-		"com.example",
-		"org.example",
-		"zw.zzs.th.ac.lpru.arounduniversity.ixiz.qoo",
-		"asia.fjs.xr",
+	tests := []struct {
+		reversedTarget string
+		expectedStart  int
+		expectedFinish int
+	}{
+		// {
+		// 	// before first domain - not supported
+		// 	reversedTarget: "aaa.aaa",
+		// 	expectedStart:  0,
+		// 	expectedFinish: 0,
+		// },
+		{
+			// first offset match
+			reversedTarget: "com.in",
+			expectedStart:  0,
+			expectedFinish: 0,
+		},
+		{
+			// between offsets - not exact match
+			reversedTarget: "com.pom",
+			expectedStart:  0,
+			expectedFinish: 32,
+		},
+		{
+			// last offset match
+			reversedTarget: "com.target",
+			expectedStart:  32,
+			expectedFinish: 32,
+		},
+		// {
+		// 	// after last match - not supported
+		// 	reversedTarget: "com.zzz",
+		// 	expectedStart:  32,
+		// 	expectedFinish: 32,
+		// },
 	}
 
-	for _, domain := range tests {
-		t.Run(domain, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.reversedTarget, func(t *testing.T) {
 			t.Parallel()
 
-			start, finish := results.FindForDomain(domain)
-			assert.LessOrEqual(t, start.Domain(), domain)
-			assert.GreaterOrEqual(t, finish.Domain(), domain)
+			start, finish := results.FindForDomain(test.reversedTarget)
+			assert.LessOrEqual(t, start.Domain(), test.reversedTarget)
+			assert.GreaterOrEqual(t, finish.Domain(), test.reversedTarget)
+
+			assert.Equal(t, test.expectedStart, start.Offset())
+			assert.Equal(t, test.expectedFinish, finish.Offset())
 		})
 	}
 }

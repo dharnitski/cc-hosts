@@ -19,6 +19,14 @@ func NewGetter(folder string) *Getter {
 func (f *Getter) Get(ctx context.Context, fileName string, offset int, length int) ([]byte, error) {
 	fullName := filepath.Join(f.folder, fileName)
 
+	if length < 0 {
+		return nil, fmt.Errorf("length is negative for file %s: %d", fileName, length)
+	}
+
+	if offset == 0 && length == 0 {
+		return os.ReadFile(fullName) //nolint:gosec
+	}
+
 	file, err := os.OpenFile(fullName, os.O_RDONLY, 0o644) //nolint:gosec
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file: %w", err)

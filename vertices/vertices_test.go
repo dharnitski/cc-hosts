@@ -12,10 +12,10 @@ import (
 func getVertices(t *testing.T) *vertices.Vertices {
 	t.Helper()
 
-	offsets, err := vertices.NewOffsets()
+	offsets, err := vertices.NewOffsets(t.Context(), file.NewGetter("../testdata/sample"))
 	require.NoError(t, err)
 
-	return vertices.NewVertices(file.NewGetter("../data/vertices"), *offsets)
+	return vertices.NewVertices(file.NewGetter("../testdata/sample/vertices"), *offsets)
 }
 
 func TestVerticesGetByDomain(t *testing.T) {
@@ -24,13 +24,9 @@ func TestVerticesGetByDomain(t *testing.T) {
 	v := getVertices(t)
 
 	tests := []string{
-		"aaa.11111",
-		"ae.regards",
-		"com.example",
-		"org.example",
-		"abbott.at",
-		"com.amoblog.resmedairsense10autoset94814",
-		"zw.zzs.th.ac.lpru.arounduniversity.ixiz.qoo",
+		"com.in",
+		"com.target",
+		"com.out",
 	}
 
 	for _, domain := range tests {
@@ -51,8 +47,7 @@ func TestVerticesGetNil(t *testing.T) {
 	v := getVertices(t)
 
 	tests := []string{
-		"random.random",
-		"com.dharnitski",
+		"com.pom",
 	}
 
 	for _, domain := range tests {
@@ -72,9 +67,8 @@ func TestVerticesGetByID(t *testing.T) {
 
 	tests := []string{
 		"0",
-		"119",
-		"283704017",
-		"283704060",
+		"1",
+		"2",
 	}
 
 	for _, id := range tests {
@@ -95,12 +89,11 @@ func TestVerticesGetByIDs(t *testing.T) {
 
 	ids := []string{
 		"0",
-		"119",
-		"283704017",
-		"283704060",
+		"1",
+		"2",
 	}
 	vertices, err := v.GetByIDs(t.Context(), ids)
 	require.NoError(t, err)
 	require.NotNil(t, vertices)
-	assert.Len(t, vertices, 4)
+	assert.Len(t, vertices, 3)
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/dharnitski/cc-hosts/vertices"
 )
 
+//nolint:gochecknoglobals
 var (
 	dataFolder          string
 	edgesForwardFolder  string
@@ -23,6 +24,7 @@ var (
 
 func main() {
 	setVars()
+
 	err := createVerticesIndex()
 	if err != nil {
 		log.Fatal("Vertices Error: ", err)
@@ -43,6 +45,7 @@ func setVars() {
 	// default folder for data
 	dataFolder = "data"
 	args := os.Args
+
 	if len(args) > 1 {
 		dataFolder = args[1]
 	}
@@ -127,6 +130,7 @@ func processOneVerticesFile(scanner *bufio.Scanner, fileName string) ([]vertices
 
 		line := string(bytes)
 		vertice, err := vertices.LoadVertice(line)
+
 		if err != nil {
 			return nil, fmt.Errorf("invalid line: %q: %w", line, err)
 		}
@@ -134,6 +138,7 @@ func processOneVerticesFile(scanner *bufio.Scanner, fileName string) ([]vertices
 		domain = vertice.Domain()
 		sid := vertice.ID()
 		id, err = strconv.Atoi(sid)
+
 		if err != nil {
 			return nil, fmt.Errorf("invalid ID: %q: %w", sid, err)
 		}
@@ -244,6 +249,7 @@ func processOneEdgesFile(scanner *bufio.Scanner, fileName string) ([]edges.Offse
 
 		line := string(bytes)
 		edge, err := edges.LoadEdge(line)
+
 		if err != nil {
 			return nil, fmt.Errorf("invalid line: %q: %w", line, err)
 		}

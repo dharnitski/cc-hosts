@@ -3,6 +3,7 @@ package edges
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -11,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/offsets"
 )
 
@@ -60,22 +62,26 @@ type Offsets struct {
 	offsets []Offset
 }
 
-func NewOffsets() (*Offsets, error) {
-	result := &Offsets{
-		offsets: make([]Offset, 0),
-	}
-	reader := bytes.NewReader(offsets.Edges)
-	err := result.loadFromReader(reader)
-
-	return result, err
+func NewOffsets(ctx context.Context, getter access.Getter) (*Offsets, error) {
+	return newOffsets(ctx, offsets.EdgesOffsetsFile, getter)
 }
 
-func NewOffsetsReversed() (*Offsets, error) {
+func NewOffsetsReversed(ctx context.Context, getter access.Getter) (*Offsets, error) {
+	return newOffsets(ctx, offsets.EdgesReversedOffsetFile, getter)
+}
+
+func newOffsets(ctx context.Context, dataFile string, getter access.Getter) (*Offsets, error) {
 	result := &Offsets{
 		offsets: make([]Offset, 0),
 	}
-	reader := bytes.NewReader(offsets.EdgesReversed)
-	err := result.loadFromReader(reader)
+
+	data, err := getter.Get(ctx, dataFile, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	reader := bytes.NewReader(data)
+	err = result.loadFromReader(reader)
 
 	return result, err
 }

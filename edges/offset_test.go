@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/dharnitski/cc-hosts/access/file"
 	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -170,7 +171,7 @@ func TestOffsets_Validate(t *testing.T) {
 func TestOffsetsFindForFromID(t *testing.T) {
 	t.Parallel()
 
-	offsets, err := edges.NewOffsets()
+	offsets, err := edges.NewOffsets(t.Context(), file.NewGetter("../testdata/sample"))
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -178,23 +179,18 @@ func TestOffsetsFindForFromID(t *testing.T) {
 		from int
 		to   int
 	}{
-		// 0 is not on file
-		{id: "0", from: 0, to: 0},
+		{id: "0", from: 0, to: 8},
+		{id: "1", from: 0, to: 8},
+		{id: "2", from: 0, to: 8},
 		// 74 is not of file
-		{id: "74", from: 0, to: 0},
-		{id: "75", from: 0, to: 131079},
-		{id: "96032", from: 917552, to: 1048637},
-		{id: "96033", from: 917552, to: 1048637},
-		{id: "96034", from: 917552, to: 1048637},
-		// last line
-		{id: "283704001", from: 3689801286, to: 3689816010},
+		{id: "3", from: 8, to: 8},
 	}
 	for _, tt := range tests {
 		t.Run(tt.id, func(t *testing.T) {
 			t.Parallel()
 
 			allOffsets := offsets.FindForFromID(tt.id)
-			offset, ok := allOffsets["part-00000-02106921-c60f-49b6-912c-b03ea5690455-c000.txt"]
+			offset, ok := allOffsets["1.txt"]
 			assert.True(t, ok)
 			assert.Equal(t, tt.from, offset.From.Offset())
 			assert.Equal(t, tt.to, offset.To.Offset())

@@ -65,7 +65,10 @@ func createSearcher(ctx context.Context) (*search.Searcher, error) {
 		return nil, err
 	}
 
-	eOffsets, err := edges.NewOffsets()
+	// folder is empty - expect offset files in the root of the bucket
+	offsetsGetter := aws.New(cfg, aws.Bucket, "")
+
+	eOffsets, err := edges.NewOffsets(ctx, offsetsGetter)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +76,7 @@ func createSearcher(ctx context.Context) (*search.Searcher, error) {
 	edgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesFolder)
 	out := edges.NewEdges(edgesGetter, *eOffsets)
 
-	reversedOffsets, err := edges.NewOffsetsReversed()
+	reversedOffsets, err := edges.NewOffsetsReversed(ctx, offsetsGetter)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +84,7 @@ func createSearcher(ctx context.Context) (*search.Searcher, error) {
 	revEdgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesReversedFolder)
 	in := edges.NewEdges(revEdgesGetter, *reversedOffsets)
 
-	vOffsets, err := vertices.NewOffsets()
+	vOffsets, err := vertices.NewOffsets(ctx, offsetsGetter)
 	if err != nil {
 		return nil, err
 	}

@@ -30,7 +30,10 @@ func New(cfg aws.Config, bucketName string, folder string) *S3Getter {
 }
 
 func (g *S3Getter) Get(ctx context.Context, fileName string, offset int, length int) ([]byte, error) {
-	key := fmt.Sprintf("%s/%s", g.folder, fileName)
+	key := fileName
+	if g.folder != "" {
+		key = fmt.Sprintf("%s/%s", g.folder, fileName)
+	}
 
 	if offset < 0 {
 		return nil, errors.New("offset cannot be negative")
@@ -41,6 +44,10 @@ func (g *S3Getter) Get(ctx context.Context, fileName string, offset int, length 
 	}
 
 	rangeStr := fmt.Sprintf("bytes=%d-%d", offset, offset+length-1)
+	if offset == 0 && length == 0 {
+		rangeStr = ""
+	}
+
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(g.bucketName),
 		Key:    aws.String(key),
@@ -59,7 +66,7 @@ func (g *S3Getter) Get(ctx context.Context, fileName string, offset int, length 
 	}()
 
 	if aws.ToInt64(result.ContentLength) != int64(length) {
-		return nil, errors.New("unexpected content length")
+		return nil, fmt.Errorf("unexpected content length: %d, expected: %d", aws.ToInt64(result.ContentLength), int64(length))
 	}
 
 	buf := make([]byte, length)

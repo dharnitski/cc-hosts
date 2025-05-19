@@ -12,13 +12,21 @@ import (
 var _ access.Getter = (*file.Getter)(nil)
 
 func TestOffsetsFile(t *testing.T) {
-	t.Skip()
 	t.Parallel()
 
-	getter := file.NewGetter("../../data/vertices")
-	// offset from data/vertices.offsets.txt
-	buffer, err := getter.Get(t.Context(), "part-00000-4ba7987d-67a0-4f7d-b410-1d92df440699-c000.txt", 2097161, 16)
+	getter := file.NewGetter("../../testdata/sample/vertices")
+	buffer, err := getter.Get(t.Context(), "1.txt", 9, 9)
 	require.NoError(t, err)
 
-	assert.Equal(t, "88296	ae.regards", string(buffer))
+	assert.Equal(t, "1	com.out", string(buffer))
+}
+
+func TestOffsetsFileAll(t *testing.T) {
+	t.Parallel()
+
+	getter := file.NewGetter("../../testdata/sample/vertices")
+	buffer, err := getter.Get(t.Context(), "1.txt", 0, 0)
+	require.NoError(t, err)
+
+	assert.Len(t, string(buffer), 32)
 }

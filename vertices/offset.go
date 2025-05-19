@@ -3,6 +3,7 @@ package vertices
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -11,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/offsets"
 )
 
@@ -21,12 +23,13 @@ const (
 
 type Offset struct {
 	// offset in bytes to find the domain in sorted file
+	// points to string start in `file`for `domain`
 	offset int
 	// domain name in reverse domain format
 	// sample: com.example
 	domain string
 	// vertice id
-	// in file ot 0 based line number
+	// in file it is 0 based line number
 	id int
 	// vertices file name without path
 	// TODO: this is not memory efficient structure, the same string repeated many times and uses memory for copies
@@ -73,12 +76,18 @@ type Offsets struct {
 	offsets []Offset
 }
 
-func NewOffsets() (*Offsets, error) {
+func NewOffsets(ctx context.Context, getter access.Getter) (*Offsets, error) {
 	result := &Offsets{
 		offsets: make([]Offset, 0),
 	}
-	reader := bytes.NewReader(offsets.Vertices)
-	err := result.loadFromReader(reader)
+
+	data, err := getter.Get(ctx, offsets.VerticesOffsetsFile, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	reader := bytes.NewReader(data)
+	err = result.loadFromReader(reader)
 
 	return result, err
 }
@@ -117,6 +126,7 @@ func (v *Offsets) Save(fileName string) error {
 	return nil
 }
 
+// Load offsets from file.
 func (v *Offsets) Load(fileName string) error {
 	v.offsets = make([]Offset, 0)
 
@@ -245,7 +255,7 @@ func (v *Offsets) FindForDomain(domain string) (Offset, Offset) {
 	// At this point, left > right, and the domain was not found
 	// right is the greatest index with domain < target
 	// left is the smallest index with domain > target
-	return items[right], items[left]
+	return items[left-1], items[left]
 }
 
 func (v *Offsets) FindForID(id int) (Offset, Offset) {
