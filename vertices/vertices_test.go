@@ -32,11 +32,11 @@ func TestVerticesGetByDomain(t *testing.T) {
 	for _, domain := range tests {
 		t.Run(domain, func(t *testing.T) {
 			t.Parallel()
-			vertice, err := v.GetByDomain(t.Context(), domain)
+			vertex, err := v.GetByDomain(t.Context(), domain)
 			require.NoError(t, err)
-			require.NotNil(t, vertice, domain)
-			assert.Equal(t, domain, vertice.Domain())
-			assert.GreaterOrEqual(t, vertice.ID(), "0", domain)
+			require.NotNil(t, vertex, domain)
+			assert.Equal(t, domain, vertex.Domain())
+			assert.GreaterOrEqual(t, vertex.ID(), "0", domain)
 		})
 	}
 }
@@ -53,9 +53,9 @@ func TestVerticesGetNil(t *testing.T) {
 	for _, domain := range tests {
 		t.Run(domain, func(t *testing.T) {
 			t.Parallel()
-			vertice, err := v.GetByDomain(t.Context(), domain)
+			vertex, err := v.GetByDomain(t.Context(), domain)
 			require.NoError(t, err)
-			assert.Nil(t, vertice, domain)
+			assert.Nil(t, vertex, domain)
 		})
 	}
 }
@@ -74,10 +74,10 @@ func TestVerticesGetByID(t *testing.T) {
 	for _, id := range tests {
 		t.Run(id, func(t *testing.T) {
 			t.Parallel()
-			vertice, err := v.GetByID(t.Context(), id)
+			vertex, err := v.GetByID(t.Context(), id)
 			require.NoError(t, err)
-			require.NotNil(t, vertice, id)
-			assert.Equal(t, id, vertice.ID())
+			require.NotNil(t, vertex, id)
+			assert.Equal(t, id, vertex.ID())
 		})
 	}
 }

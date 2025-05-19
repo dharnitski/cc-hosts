@@ -108,9 +108,9 @@ func (v *Vertices) GetByIDs(ctx context.Context, ids []string) ([]Vertex, error)
 			defer wg.Done()
 			defer func() { <-semaphore }()
 
-			vertice, err := v.GetByID(ctx, id)
+			vertex, err := v.GetByID(ctx, id)
 			resultChan <- result{
-				vertice: vertice,
+				vertice: vertex,
 				err:     err,
 				index:   idx,
 			}
@@ -180,19 +180,19 @@ func findVertice(buffer []byte, key string, searchSwitch searchKey) (*Vertex, er
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		vertice, err := LoadVertice(line)
+		vertex, err := LoadVertice(line)
 		if err != nil {
 			return nil, err
 		}
 
 		switch searchSwitch {
 		case searchKeyDomain:
-			if vertice.domain == key {
-				return vertice, nil
+			if vertex.domain == key {
+				return vertex, nil
 			}
 		case searchKeyID:
-			if vertice.id == key {
-				return vertice, nil
+			if vertex.id == key {
+				return vertex, nil
 			}
 		}
 	}

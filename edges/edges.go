@@ -117,13 +117,13 @@ func findEdges(buffer []byte, fromID string) ([]string, error) {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		vertice, err := LoadEdge(line)
+		vertex, err := LoadEdge(line)
 		if err != nil {
 			return nil, err
 		}
 
-		if vertice.fromID == fromID {
-			results = append(results, vertice.toID)
+		if vertex.fromID == fromID {
+			results = append(results, vertex.toID)
 			if len(results) >= DefaultMaxSize {
 				break
 			}

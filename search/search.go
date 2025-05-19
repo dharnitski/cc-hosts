@@ -48,14 +48,14 @@ func (s *Searcher) GetTargets(ctx context.Context, domain string) (*Result, erro
 	timings := make(map[string]int)
 	start := time.Now()
 
-	vertice, err := s.v.GetByDomain(ctx, reversed)
+	vertex, err := s.v.GetByDomain(ctx, reversed)
 	if err != nil {
 		return nil, err
 	}
 
 	timings["get_by_domain"] = int(time.Since(start).Milliseconds())
 
-	if vertice == nil {
+	if vertex == nil {
 		return nil, nil //nolint:nilnil
 	}
 
@@ -70,13 +70,13 @@ func (s *Searcher) GetTargets(ctx context.Context, domain string) (*Result, erro
 	go func() {
 		defer wg.Done()
 
-		outs, outErr = s.getDomains(ctx, vertice.ID(), timings, out)
+		outs, outErr = s.getDomains(ctx, vertex.ID(), timings, out)
 	}()
 
 	go func() {
 		defer wg.Done()
 
-		ins, inErr = s.getDomains(ctx, vertice.ID(), timings, in)
+		ins, inErr = s.getDomains(ctx, vertex.ID(), timings, in)
 	}()
 	wg.Wait()
 
