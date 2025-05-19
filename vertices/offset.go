@@ -231,7 +231,6 @@ func find[T comparable](items []Offset, target T, less func(T, T) bool, getField
 		return Offset{}, Offset{}
 	}
 
-	// Binary search implementation
 	left := 0
 	right := len(items) - 1
 
