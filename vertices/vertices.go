@@ -18,7 +18,7 @@ const (
 )
 
 type Vertex struct {
-	// vertice id
+	// vertex id
 	id string
 	// domain name in reverse domain format
 	// sample: com.example
@@ -89,9 +89,9 @@ func (v *Vertices) GetByID(ctx context.Context, id string) (*Vertex, error) {
 
 func (v *Vertices) GetByIDs(ctx context.Context, ids []string) ([]Vertex, error) {
 	type result struct {
-		vertice *Vertex
-		err     error
-		index   int
+		vertex *Vertex
+		err    error
+		index  int
 	}
 
 	resultChan := make(chan result, len(ids))
@@ -110,9 +110,9 @@ func (v *Vertices) GetByIDs(ctx context.Context, ids []string) ([]Vertex, error)
 
 			vertex, err := v.GetByID(ctx, id)
 			resultChan <- result{
-				vertice: vertex,
-				err:     err,
-				index:   idx,
+				vertex: vertex,
+				err:    err,
+				index:  idx,
 			}
 		}(i, id)
 	}
@@ -133,8 +133,8 @@ func (v *Vertices) GetByIDs(ctx context.Context, ids []string) ([]Vertex, error)
 			errs = append(errs, res.err)
 		}
 
-		if res.vertice != nil {
-			results = append(results, *res.vertice)
+		if res.vertex != nil {
+			results = append(results, *res.vertex)
 		}
 	}
 

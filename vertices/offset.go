@@ -28,7 +28,7 @@ type Offset struct {
 	// domain name in reverse domain format
 	// sample: com.example
 	domain string
-	// vertice id
+	// vertex id
 	// in file it is 0 based line number
 	id int
 	// vertices file name without path

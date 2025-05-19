@@ -19,9 +19,9 @@ const (
 )
 
 type Edge struct {
-	// source vertice id
+	// source vertex id
 	fromID string
-	// target vertice id
+	// target vertex id
 	toID string
 }
 
@@ -55,7 +55,7 @@ func NewEdges(getter access.Getter, offsets Offsets) *Edges {
 	}
 }
 
-// for source vertice id return list of target vertice ids.
+// for source vertex id return list of target vertex ids.
 func (v *Edges) Get(ctx context.Context, fromID string) ([]string, error) {
 	offsets := v.offsets.FindForFromID(fromID)
 

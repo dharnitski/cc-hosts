@@ -24,7 +24,7 @@ const (
 type Offset struct {
 	// offset in bytes to find the domain in sorted file
 	offset int
-	// vertice id
+	// vertex id
 	// in file ot 0 based line number
 	id string
 	// vertices file name without path
