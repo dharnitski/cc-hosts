@@ -218,48 +218,15 @@ func (v *Offsets) Validate() error {
 
 // return from and to offsets for domain to fetch data from file.
 func (v *Offsets) FindForDomain(domain string) (Offset, Offset) {
-	items := v.offsets
-	if len(items) == 0 {
-		return Offset{}, Offset{}
-	}
-
-	// Binary search implementation
-	left := 0
-	right := len(items) - 1
-
-	// If domain is outside our range, return appropriate bounds
-	if domain < items[left].domain {
-		return Offset{}, items[left]
-	}
-
-	if domain > items[right].domain {
-		return items[right], Offset{}
-	}
-
-	// Binary search
-	for left <= right {
-		mid := left + (right-left)/2
-
-		if items[mid].domain == domain {
-			// Exact match found
-			return items[mid], items[mid]
-		}
-
-		if items[mid].domain < domain {
-			left = mid + 1
-		} else {
-			right = mid - 1
-		}
-	}
-
-	// At this point, left > right, and the domain was not found
-	// right is the greatest index with domain < target
-	// left is the smallest index with domain > target
-	return items[left-1], items[left]
+	return find(v.offsets, domain, func(a, b string) bool { return a < b }, func(o Offset) string { return o.domain })
 }
 
 func (v *Offsets) FindForID(id int) (Offset, Offset) {
-	items := v.offsets
+	return find(v.offsets, id, func(a, b int) bool { return a < b }, func(o Offset) int { return o.id })
+}
+
+// Generic binary search function.
+func find[T comparable](items []Offset, target T, less func(T, T) bool, getField func(Offset) T) (Offset, Offset) {
 	if len(items) == 0 {
 		return Offset{}, Offset{}
 	}
@@ -268,12 +235,12 @@ func (v *Offsets) FindForID(id int) (Offset, Offset) {
 	left := 0
 	right := len(items) - 1
 
-	// If id is outside our range, return appropriate bounds
-	if id < items[left].id {
+	// If target is outside our range, return appropriate bounds
+	if less(target, getField(items[left])) {
 		return Offset{}, items[left]
 	}
 
-	if id > items[right].id {
+	if less(getField(items[right]), target) {
 		return items[right], Offset{}
 	}
 
@@ -281,20 +248,20 @@ func (v *Offsets) FindForID(id int) (Offset, Offset) {
 	for left <= right {
 		mid := left + (right-left)/2
 
-		if items[mid].id == id {
+		if getField(items[mid]) == target {
 			// Exact match found
 			return items[mid], items[mid]
 		}
 
-		if items[mid].id < id {
+		if less(getField(items[mid]), target) {
 			left = mid + 1
 		} else {
 			right = mid - 1
 		}
 	}
 
-	// At this point, left > right, and the id was not found
-	// right is the greatest index with id < target
-	// left is the smallest index with id > target
+	// At this point, left > right, and the target was not found
+	// right is the greatest index with field < target
+	// left is the smallest index with field > target
 	return items[right], items[left]
 }
