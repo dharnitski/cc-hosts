@@ -65,8 +65,8 @@ func (g *S3Getter) Get(ctx context.Context, fileName string, offset int, length 
 		}
 	}()
 
-	if aws.ToInt64(result.ContentLength) != int64(length) {
-		return nil, fmt.Errorf("unexpected content length: %d, expected: %d", aws.ToInt64(result.ContentLength), int64(length))
+	if length != 0 && aws.ToInt64(result.ContentLength) != int64(length) {
+		return nil, fmt.Errorf("unexpected content length for key %s: %d, expected: %d", key, aws.ToInt64(result.ContentLength), int64(length))
 	}
 
 	buf := make([]byte, length)
