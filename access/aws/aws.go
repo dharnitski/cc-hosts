@@ -39,7 +39,7 @@ func (g *S3Getter) Get(ctx context.Context, fileName string, offset int, length 
 		return nil, errors.New("offset cannot be negative")
 	}
 
-	if length <= 0 {
+	if length < 0 {
 		return nil, errors.New("length must be positive")
 	}
 
