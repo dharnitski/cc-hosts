@@ -25,7 +25,7 @@ jobs:
       run: make build
 
     - name: lint
-      uses: make lint
+      run: make lint
 
     - name: Coveralls
       uses: coverallsapp/github-action@v2
