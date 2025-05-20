@@ -8,5 +8,5 @@ try it - https://api.cc.dharnitski.com/domain/badssl.com
 ```mermaid
 graph LR;
     Gateway --> Lambda;
-    Lambda -->S3;
+    Lambda -->S3[(Database)];
 ```
