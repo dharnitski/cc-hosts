@@ -175,7 +175,7 @@ Each file is not continuation of index. Instead, each file contains subset of al
 ```
 
 
-## Create Reversed 
+## Create Reversed Edges
 
 Edges store links sorted by site name. Using that sort order we can efficiently (without scanning all files) find all links from particular site to others.
 
@@ -249,6 +249,28 @@ This is sample data from Sorted Reversed Edges file
 71	40219391
 71	66062753
 73	256919968
+```
+
+## Create Offset files
+
+Vertices and Edges are stored in sorted files. We can use binary search to find data in file wi want we want with O(log n) time.
+But we can do it even faster. We can precompute offsets for every X lines and get data we want with single get operation using these offsets.
+It is especially helpful in IO constrain environment as AWS Lambda.
+
+Command line to run offsets precalculation:
+
+
+```bash
+go run cmd/indexer/main.go data
+```
+
+You should see 3 files updated:
+
+```
+./data:
+edges-reversed.offsets.txt
+edges.offsets.txt
+vertices.offsets.txt
 ```
 
 ## Pushing files to S3
