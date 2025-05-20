@@ -22,5 +22,10 @@ jobs:
     - name: lint
       uses: golangci/golangci-lint-action@v8
 
-    - name: Coveralls
-      uses: coverallsapp/github-action@v2
+    - name: tests
+      run: go test -v -coverprofile=profile.cov ./...
+
+    - name: coveralls
+      uses: shogo82148/actions-goveralls@v1
+      with:
+        path-to-profile: profile.cov
