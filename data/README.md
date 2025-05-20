@@ -10,15 +10,20 @@ Check this link for more details - https://commoncrawl.org/get-started
 
 ### Find latests data identifier
 
-Common Crawls constantly scrabs internet and regularly publishes datasets with collected data.
+Common Crawls constantly scrubs internet and regularly publishes datasets with collected data.
 For Web Graphs that currently happens every 3 month. 
 
-We need to find the latest dataset to use. Go to https://commoncrawl.org/web-graphs and pick it in that page. You will be redirected to page that contains downloads for that dayaset.
+We need to find the latest dataset to use. 
+
+Go to https://index.commoncrawl.org/graphinfo.json and find latest `id` and `location`.
+
+At the this documentation is written it is `cc-main-2025-feb-mar-apr` and `s3://commoncrawl/projects/hyperlinkgraph/cc-main-2025-feb-mar-apr/`
+
+Alternative path to get that data:
+
+Go to https://commoncrawl.org/web-graphs and pick it in that page. You will be redirected to page that contains downloads for that dataset.
 In my case it is https://data.commoncrawl.org/projects/hyperlinkgraph/cc-main-2025-feb-mar-apr/index.html.  `cc-main-2025-feb-mar-apr` is what we need. That is dataset identifier. It is combined dataset containing data from Febriary, March and April of 2025. That page also has direct links to download data data in  [BVGraph](https://webgraph.di.unimi.it/docs/it/unimi/dsi/webgraph/BVGraph.html) format. 
 
-Unfortunately, data we need is not published on that page but it can be downloaded from S3.    
-
-For now, all we need is an identifier `cc-main-2025-feb-mar-apr`. We will use it to create S3 path to load data. 
 
 ### Download data
 
