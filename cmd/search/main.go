@@ -18,36 +18,12 @@ import (
 func createSearcher(ctx context.Context) (*search.Searcher, error) {
 	rootFolder := "./data"
 
-	// folder is empty - expect offset files in the root of the bucket
 	offsetsGetter := file.NewGetter(rootFolder)
-
-	eOffsets, err := edges.NewOffsets(ctx, offsetsGetter)
-	if err != nil {
-		return nil, err
-	}
-
 	edgesGetter := file.NewGetter(path.Join(rootFolder, edges.EdgesFolder))
-	out := edges.NewEdges(edgesGetter, *eOffsets)
-
-	reversedOffsets, err := edges.NewOffsetsReversed(ctx, offsetsGetter)
-	if err != nil {
-		return nil, err
-	}
-
 	revEdgesGetter := file.NewGetter(path.Join(rootFolder, edges.EdgesReversedFolder))
-	in := edges.NewEdges(revEdgesGetter, *reversedOffsets)
-
-	vOffsets, err := vertices.NewOffsets(ctx, offsetsGetter)
-	if err != nil {
-		return nil, err
-	}
-
 	verticesGetter := file.NewGetter(path.Join(rootFolder, vertices.Folder))
-	v := vertices.NewVertices(verticesGetter, *vOffsets)
 
-	searcher := search.NewSearcher(v, out, in)
-
-	return searcher, nil
+	return search.NewSearcher(ctx, offsetsGetter, edgesGetter, revEdgesGetter, verticesGetter)
 }
 
 func main() {

@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dharnitski/cc-hosts/access"
 	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/dharnitski/cc-hosts/vertices"
 )
@@ -28,8 +29,31 @@ type Searcher struct {
 	mu sync.Mutex
 }
 
-func NewSearcher(v *vertices.Vertices, out *edges.Edges, in *edges.Edges) *Searcher {
-	return &Searcher{v: v, out: out, in: in}
+func NewSearcher(ctx context.Context, offsetsGetter access.Getter, edgesGetter access.Getter, revEdgesGetter access.Getter, verticesGetter access.Getter) (*Searcher, error) {
+	eOffsets, err := edges.NewOffsets(ctx, offsetsGetter)
+	if err != nil {
+		return nil, err
+	}
+
+	out := edges.NewEdges(edgesGetter, *eOffsets)
+
+	reversedOffsets, err := edges.NewOffsetsReversed(ctx, offsetsGetter)
+	if err != nil {
+		return nil, err
+	}
+
+	in := edges.NewEdges(revEdgesGetter, *reversedOffsets)
+
+	vOffsets, err := vertices.NewOffsets(ctx, offsetsGetter)
+	if err != nil {
+		return nil, err
+	}
+
+	v := vertices.NewVertices(verticesGetter, *vOffsets)
+
+	searcher := &Searcher{v: v, out: out, in: in}
+
+	return searcher, nil
 }
 
 type Result struct {
