@@ -58,12 +58,12 @@ func NewSearcher(ctx context.Context, offsetsGetter access.Getter, edgesGetter a
 	return searcher, nil
 }
 
-func NewAwsSearcher(ctx context.Context, cfg real_aws.Config) (*Searcher, error) {
+func NewAwsSearcher(ctx context.Context, cfg real_aws.Config, bucket string) (*Searcher, error) {
 	// folder is empty - expect offset files in the root of the bucket
-	offsetsGetter := aws.New(cfg, aws.Bucket, "")
-	edgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesFolder)
-	revEdgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesReversedFolder)
-	verticesGetter := aws.New(cfg, aws.Bucket, vertices.Folder)
+	offsetsGetter := aws.New(cfg, bucket, "")
+	edgesGetter := aws.New(cfg, bucket, edges.EdgesFolder)
+	revEdgesGetter := aws.New(cfg, bucket, edges.EdgesReversedFolder)
+	verticesGetter := aws.New(cfg, bucket, vertices.Folder)
 
 	return NewSearcher(ctx, offsetsGetter, edgesGetter, revEdgesGetter, verticesGetter)
 }

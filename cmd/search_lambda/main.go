@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/dharnitski/cc-hosts/access/aws"
 	"github.com/dharnitski/cc-hosts/search"
 )
 
@@ -65,7 +66,7 @@ func createSearcher(ctx context.Context) (*search.Searcher, error) {
 		return nil, err
 	}
 
-	return search.NewAwsSearcher(ctx, cfg)
+	return search.NewAwsSearcher(ctx, cfg, aws.Bucket)
 }
 
 func main() {
