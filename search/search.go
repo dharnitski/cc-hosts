@@ -8,7 +8,9 @@ import (
 	"sync"
 	"time"
 
+	real_aws "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/dharnitski/cc-hosts/access"
+	"github.com/dharnitski/cc-hosts/access/aws"
 	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/dharnitski/cc-hosts/vertices"
 )
@@ -54,6 +56,16 @@ func NewSearcher(ctx context.Context, offsetsGetter access.Getter, edgesGetter a
 	searcher := &Searcher{v: v, out: out, in: in}
 
 	return searcher, nil
+}
+
+func NewAwsSearcher(ctx context.Context, cfg real_aws.Config) (*Searcher, error) {
+	// folder is empty - expect offset files in the root of the bucket
+	offsetsGetter := aws.New(cfg, aws.Bucket, "")
+	edgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesFolder)
+	revEdgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesReversedFolder)
+	verticesGetter := aws.New(cfg, aws.Bucket, vertices.Folder)
+
+	return NewSearcher(ctx, offsetsGetter, edgesGetter, revEdgesGetter, verticesGetter)
 }
 
 type Result struct {

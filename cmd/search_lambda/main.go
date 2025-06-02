@@ -8,10 +8,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/dharnitski/cc-hosts/access/aws"
-	"github.com/dharnitski/cc-hosts/edges"
 	"github.com/dharnitski/cc-hosts/search"
-	"github.com/dharnitski/cc-hosts/vertices"
 )
 
 var searcher *search.Searcher //nolint:gochecknoglobals
@@ -68,13 +65,7 @@ func createSearcher(ctx context.Context) (*search.Searcher, error) {
 		return nil, err
 	}
 
-	// folder is empty - expect offset files in the root of the bucket
-	offsetsGetter := aws.New(cfg, aws.Bucket, "")
-	edgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesFolder)
-	revEdgesGetter := aws.New(cfg, aws.Bucket, edges.EdgesReversedFolder)
-	verticesGetter := aws.New(cfg, aws.Bucket, vertices.Folder)
-
-	return search.NewSearcher(ctx, offsetsGetter, edgesGetter, revEdgesGetter, verticesGetter)
+	return search.NewAwsSearcher(ctx, cfg)
 }
 
 func main() {
