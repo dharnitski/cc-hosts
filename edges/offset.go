@@ -234,7 +234,10 @@ func (v *Offsets) FindForFromID(fromID string) map[string]TwoOffsets {
 
 	for file, offsets := range offsetsMap {
 		from, to := findFromFomIDInFile(fromID, offsets)
-		grouppedOffsets[file] = TwoOffsets{from, to}
+		if to.offset <= from.offset {
+			continue
+		}
+		grouppedOffsets[file] = TwoOffsets{From: from, To: to}
 	}
 
 	return grouppedOffsets
