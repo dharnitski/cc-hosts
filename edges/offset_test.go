@@ -175,15 +175,15 @@ func TestOffsetsFindForFromID(t *testing.T) {
 	require.NoError(t, err)
 
 	tests := []struct {
-		id   string
-		from int
-		to   int
+		id             string
+		expectedExists bool
+		expectedFrom   int
+		expectedTo     int
 	}{
-		{id: "0", from: 0, to: 8},
-		{id: "1", from: 0, to: 8},
-		{id: "2", from: 0, to: 8},
-		// 74 is not of file
-		{id: "3", from: 8, to: 8},
+		{id: "0", expectedExists: true, expectedFrom: 0, expectedTo: 8},
+		{id: "1", expectedExists: true, expectedFrom: 0, expectedTo: 8},
+		{id: "2", expectedExists: true, expectedFrom: 0, expectedTo: 8},
+		{id: "3", expectedExists: false, expectedFrom: 0, expectedTo: 0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.id, func(t *testing.T) {
@@ -191,9 +191,15 @@ func TestOffsetsFindForFromID(t *testing.T) {
 
 			allOffsets := offsets.FindForFromID(tt.id)
 			offset, ok := allOffsets["1.txt"]
-			assert.True(t, ok)
-			assert.Equal(t, tt.from, offset.From.Offset())
-			assert.Equal(t, tt.to, offset.To.Offset())
+			assert.Equal(t, tt.expectedExists, ok)
+
+			if tt.expectedExists {
+				assert.Equal(t, tt.expectedFrom, offset.From.Offset())
+				assert.Equal(t, tt.expectedTo, offset.To.Offset())
+			} else {
+				assert.Equal(t, tt.expectedFrom, offset.From.Offset())
+				assert.Equal(t, tt.expectedTo, offset.To.Offset())
+			}
 		})
 	}
 }
