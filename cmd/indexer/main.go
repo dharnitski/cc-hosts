@@ -129,16 +129,16 @@ func processOneVerticesFile(scanner *bufio.Scanner, fileName string) ([]vertices
 		tokenLength := len(bytes) + 1
 
 		line := string(bytes)
-		vertex, err := vertices.LoadVertex(line)
 
+		vertex, err := vertices.LoadVertex(line)
 		if err != nil {
 			return nil, fmt.Errorf("invalid line: %q: %w", line, err)
 		}
 
 		domain = vertex.Domain()
 		sid := vertex.ID()
-		id, err = strconv.Atoi(sid)
 
+		id, err = strconv.Atoi(sid)
 		if err != nil {
 			return nil, fmt.Errorf("invalid ID: %q: %w", sid, err)
 		}
@@ -248,8 +248,8 @@ func processOneEdgesFile(scanner *bufio.Scanner, fileName string) ([]edges.Offse
 		tokenLength := len(bytes) + 1
 
 		line := string(bytes)
-		edge, err := edges.LoadEdge(line)
 
+		edge, err := edges.LoadEdge(line)
 		if err != nil {
 			return nil, fmt.Errorf("invalid line: %q: %w", line, err)
 		}

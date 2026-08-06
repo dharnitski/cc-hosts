@@ -102,6 +102,7 @@ func (v *Vertices) GetByIDs(ctx context.Context, ids []string) ([]Vertex, error)
 
 	for i, id := range ids {
 		wg.Add(1)
+
 		semaphore <- struct{}{}
 
 		go func(idx int, id string) {

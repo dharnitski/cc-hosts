@@ -193,13 +193,8 @@ func TestOffsetsFindForFromID(t *testing.T) {
 			offset, ok := allOffsets["1.txt"]
 			assert.Equal(t, tt.expectedExists, ok)
 
-			if tt.expectedExists {
-				assert.Equal(t, tt.expectedFrom, offset.From.Offset())
-				assert.Equal(t, tt.expectedTo, offset.To.Offset())
-			} else {
-				assert.Equal(t, tt.expectedFrom, offset.From.Offset())
-				assert.Equal(t, tt.expectedTo, offset.To.Offset())
-			}
+			assert.Equal(t, tt.expectedFrom, offset.From.Offset())
+			assert.Equal(t, tt.expectedTo, offset.To.Offset())			
 		})
 	}
 }

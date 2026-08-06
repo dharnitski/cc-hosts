@@ -114,6 +114,7 @@ func (s *Searcher) GetTargets(ctx context.Context, domain string) (*Result, erro
 
 		ins, inErr = s.getDomains(ctx, vertex.ID(), timings, in)
 	}()
+
 	wg.Wait()
 
 	if outErr != nil {
