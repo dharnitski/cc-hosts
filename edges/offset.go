@@ -237,6 +237,7 @@ func (v *Offsets) FindForFromID(fromID string) map[string]TwoOffsets {
 		if to.offset <= from.offset {
 			continue
 		}
+
 		grouppedOffsets[file] = TwoOffsets{From: from, To: to}
 	}
 

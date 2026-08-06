@@ -16,7 +16,7 @@ func TestProcessOneVerticesFile(t *testing.T) {
 
 	buffer := strings.Builder{}
 	for i := range 2000 {
-		buffer.WriteString(fmt.Sprintf("%d\t%d.example.com\n", i, i))
+		fmt.Fprintf(&buffer, "%d\t%d.example.com\n", i, i)
 	}
 
 	fileLength := buffer.Len()
@@ -60,7 +60,7 @@ func TestProcessOneEdgesFile(t *testing.T) {
 
 	buffer := strings.Builder{}
 	for i := range 20000 {
-		buffer.WriteString(fmt.Sprintf("%d\t%d\n", i, i))
+		fmt.Fprintf(&buffer, "%d\t%d\n", i, i)
 	}
 
 	scanner := bufio.NewScanner(strings.NewReader(buffer.String()))
